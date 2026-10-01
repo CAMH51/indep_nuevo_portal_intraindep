@@ -1,0 +1,193 @@
+<% sistemas.forEach(sistema => { %>
+  <div class="group relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out border border-[#e6d194] hover:border-[#a57f2c] p-6 flex flex-col items-start gap-3 transform hover:-translate-y-1">
+
+    <!-- Cabecera: icono + título + badge de siglas -->
+    <div class="flex items-center gap-4 w-full" title="<%= sistema.descripcion %>">
+      <!-- Icono con fondo #611323 -->
+      <div class="w-12 h-12 rounded-xl bg-[#611323] flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-300 flex-shrink-0">
+        <svg class="w-6 h-6 text-[#e6d194]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.35709 16V5.78571c0-.43393.34822-.78571.77777-.78571H18.5793c.4296 0 .7778.35178.7778.78571V16M5.35709 16h-1c-.55229 0-1 .4477-1 1v1c0 .5523.44771 1 1 1H20.3571c.5523 0 1-.4477 1-1v-1c0-.5523-.4477-1-1-1h-1M5.35709 16H19.3571M9.35708 8l2.625 2.5L9.35708 13m4.00001 0h2"/>
+        </svg>
+      </div>
+      
+      <!-- Título + badge de siglas -->
+      <div class="flex flex-wrap items-center gap-2">
+        <h4 class="text-lg font-bold text-[#611323] group-hover:text-[#9b2247] transition-colors duration-200">
+          <a href="<%= sistema.url_sistema %>" target="_blank">
+            <%= sistema.nombre_sistema %>
+          </a>
+        </h4>
+        <!-- Badge de siglas -->
+<!--         <span class="px-3 py-1 text-xs font-semibold rounded-full bg-[#e6d194] text-[#611323] border border-[#a57f2c]">
+          <%= sistema.siglas %>
+        </span> -->
+      </div>
+    </div>
+
+    <!-- Línea decorativa degradada: #9b2247 → #a57f2c -->
+  <!--   <div class="w-12 h-1 bg-gradient-to-r from-[#9b2247] to-[#a57f2c] rounded-full group-hover:w-full transition-all duration-500"></div> -->
+
+  </div>
+<% }) %>
+
+<!-- Modal de Manuales del Sistema -->
+<div id="modalManualesSistema" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+  <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-[#e6d194]">
+    
+    <!-- Encabezado del Modal -->
+    <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#611323] to-[#9b2247] text-white">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-white/10 rounded-lg">
+          <svg class="w-6 h-6 text-[#e6d194]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <div>
+          <h3 id="modalManualesTitle" class="text-lg font-bold">Manuales del Sistema</h3>
+          <p class="text-xs text-[#e6d194]">Selecciona un manual para visualizar o descargar</p>
+        </div>
+      </div>
+      <button onclick="closeModalManuales()" class="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Cuerpo del Modal -->
+    <div id="modalManualesBody" class="p-6 max-h-[60vh] overflow-y-auto">
+      <!-- Contenido dinámico -->
+    </div>
+
+    <!-- Pie del Modal -->
+    <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex justify-end">
+      <button onclick="closeModalManuales()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl text-sm transition-colors">
+        Cerrar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script >
+  function openModalManuales() {
+    const modal = document.getElementById('modalManualesSistema');
+    if (modal) {
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeModalManuales() {
+    const modal = document.getElementById('modalManualesSistema');
+    if (modal) {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModalManuales();
+  });
+
+  const modalOverlay = document.getElementById('modalManualesSistema');
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModalManuales();
+    });
+  }
+
+  async function getManuales(id, nombreSistema = ''){
+    const titleEl = document.getElementById('modalManualesTitle');
+    const bodyEl = document.getElementById('modalManualesBody');
+
+    if (titleEl) {
+      titleEl.textContent = nombreSistema ? `Manuales - ${nombreSistema}` : 'Manuales del Sistema';
+    }
+
+    if (bodyEl) {
+      bodyEl.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-8 gap-3 text-gray-500">
+          <svg class="w-8 h-8 animate-spin text-[#9b2247]" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="text-sm font-medium">Cargando manuales...</span>
+        </div>
+      `;
+    }
+
+    openModalManuales();
+
+    try {
+      const response = await fetch('/manuales/sistema/' + id, { method: 'GET' });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Error al obtener los manuales');
+      }
+
+      const manuales = result.data || [];
+
+      if (manuales.length === 0) {
+        bodyEl.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-8 text-center text-gray-500 gap-2">
+            <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 mb-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <p class="font-medium text-gray-700">Sin manuales disponibles</p>
+            <p class="text-xs text-gray-400">Este sistema aún no cuenta con manuales de usuario registrados.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div class="grid grid-cols-1 gap-3">';
+      manuales.forEach(m => {
+        const fileUrl = m.archivo ? `/imagenes/home/manuales/${m.archivo.nombre_archivo}` : null;
+        const fileExt = m.archivo && m.archivo.ext_archivo ? m.archivo.ext_archivo.toUpperCase() : 'DOC';
+
+        html += `
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-[#a57f2c] transition-all">
+            <div class="flex items-center gap-3 min-w-0 pr-3">
+              <div class="w-10 h-10 rounded-lg bg-[#611323]/10 text-[#611323] flex items-center justify-center flex-shrink-0 font-bold text-xs">
+                ${fileExt}
+              </div>
+              <div class="truncate">
+                <h4 class="font-bold text-gray-800 text-sm truncate">${m.titulo || 'Manual de usuario'}</h4>
+                <p class="text-xs text-gray-500 truncate">${m.archivo ? m.archivo.nombre_archivo : 'Archivo adjunto'}</p>
+              </div>
+            </div>
+            ${fileUrl ? `
+              <a href="${fileUrl}" target="_blank"
+                 class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#9b2247] hover:bg-[#611323] text-white text-xs font-semibold rounded-lg transition-colors flex-shrink-0 shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Ver / Descargar
+              </a>
+            ` : `
+              <span class="text-xs text-gray-400 italic">No disponible</span>
+            `}
+          </div>
+        `;
+      });
+      html += '</div>';
+
+      bodyEl.innerHTML = html;
+
+    } catch (err) {
+      console.error(err);
+      bodyEl.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-6 text-center text-red-500 gap-2">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-sm font-medium">Ocurrió un error al cargar los manuales.</p>
+        </div>
+      `;
+    }
+  }
+</script>

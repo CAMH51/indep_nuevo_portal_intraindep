@@ -1,0 +1,213 @@
+<div class="shadow-lg p-4 bg-white p-4 rounded-xl bg-white h-[700px] overflow-hidden">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nuevo Usuario</p>
+    <div class="h-[600px] overflow-x-scroll">
+        <form id="formUsuario">
+    
+             <%- include('../../../components/input',{
+                titulo:'Correo electrónico:', 
+                type:'email', 
+                id:'email', 
+                name:'email', 
+                placeholder:'Correo electrónico'}) 
+            %>
+    
+            <%- include('../../../components/select',{
+                titulo:'Roles:',
+                texto:'Seleccione un Rol:' ,
+                id:'fk_id_rol', 
+                name:'fk_id_rol',
+                opciones:rolesArray, 
+                opcionId:'id_rol',
+                opcionNombre:'rol'}) 
+            %>
+            <div class="row">
+                <div class="col-sm-12 col-md-12  mb-3">
+                    <div class="field">
+                        <label class="text-1xl font-bold text-amarillo-oscuro p-2" for="selectOpciones">
+                            Módulos:
+                            <select id="selectOpciones" name="modulos[]" multiple="multiple" style="width: 100%">
+                            </select>
+                        </label>
+                        <p class="msg"></p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12 col-md-12 mb-3">
+                    <div class="field">
+                        <label class="text-1xl font-bold text-amarillo-oscuro p-2" for="selectApartados">
+                            Apartados:
+                            <select id="selectApartados" name="apartados[]" multiple="multiple" style="width: 100%">
+                                <option value="">Seleccione los Apartados</option>
+                            </select>
+                        </label>
+                        <p class="msg"></p>
+                    </div>
+
+                </div>
+            </div>
+    
+
+            <%- include('../../../components/btnGuardar',{
+                texto:'Guardar Usuario', 
+                type:'submit', 
+                id:'btnGuardarUsuario'}) 
+            %>
+        </form>
+
+    </div>
+</div>
+
+<%- include('../../../components/scriptValidator.ejs',{}) %>
+
+<script >
+    const id_user =<%= JSON.stringify(user.id_user) %>;
+    const id_rol = <%= JSON.stringify(user.id_rol) %>;
+
+    const validarUsuarios =[
+        {name:'email', validate:'required|email'},
+        {name:'fk_id_rol', validate:'required'},
+        {name:'modulos[]', validate:'required'},
+        {name:'apartados[]', validate:'required'},
+    ];
+
+    const formUsuario = document.getElementById('formUsuario');
+
+    formUsuario.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarUsuarios);
+        
+        if(valid){
+            
+            const formData = new FormData(formUsuario);
+    
+            const response =await fetch('/users',{
+                method: 'POST',
+                body: formData
+            }); 
+    
+            const data = await response.json();
+    
+            if(data.success){
+                const divModulos = document.getElementById('selectOpciones').innerHTML = "";
+                const divApartados = document.getElementById('selectApartados').innerHTML = "";
+                selectApartados();
+                // Si solo quieres recargar los datos actuales
+                refrescarTabla('#tablaUsuarios')
+                formUsuario.reset();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro agregado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }else{
+                Swal.fire({
+                    position: "top-end",
+                    icon: "warning",
+                    title: data.msg,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+
+    });
+
+    jQuery(document).ready(function($) {
+        $('#selectOpciones').select2({
+            placeholder: "Seleccione los Módulos",
+            allowClear: true
+        });
+
+        
+
+        $('#selectApartados').select2({
+            placeholder: "Seleccione los Apartados",
+            allowClear: true
+        });
+    });
+
+document.getElementById('fk_id_rol').addEventListener("change", async (e) => {
+    const select = $('#selectOpciones'); // Usar jQuery para el select
+    let html = "";
+    const response = await fetch('/modulos/rol/' + e.target.value, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    
+    const modulos = data.data.map(modulo => {
+        return modulo.modulo
+    });
+    
+    modulos.forEach(modulo => {
+        html += `
+            <option value="${modulo.id_modulo}">${modulo.modulo}</option>
+        `;
+    });
+    
+    // Actualizar el select y refrescar Select2
+    select.html(html);
+    select.trigger('change'); // Disparar evento change
+    select.trigger('select2:updated'); // Forzar actualización de Select2
+    $('#selectOpciones').val($('#selectOpciones option').map(function() {
+            return this.value;
+        }).get()).trigger('change');
+});
+
+async function selectApartados(){
+    const select = $('#selectApartados'); // Usar jQuery para el select
+    let html = '<option value="">Seleccione los Apartados</option>';
+    const response = await fetch('/apartados/all', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+
+    data.data.forEach(apartado => {
+        html += `
+            <option value="${apartado.id_apartado}">${apartado.apartado}</option>
+        `;
+    });
+
+    select.html(html);
+    select.trigger('change'); // Disparar evento change
+    select.trigger('select2:updated');
+}
+
+async function selectRelApartadosUser(id_user){
+    const select = $('#selectApartados'); // Usar jQuery para el select
+    let html = '<option value="">Seleccione los Apartados</option>';
+    const response = await fetch('/rel_apartado_user/user/'+ id_user, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log('apartadosUser',data);
+
+    data.data.forEach(apartado => {
+        html += `
+            <option value="${apartado.apartado.id_apartado}">${apartado.apartado.apartado}</option>
+        `;
+    });
+
+    select.html(html);
+    select.trigger('change'); // Disparar evento change
+    select.trigger('select2:updated');
+}
+if(id_rol === 1){
+    selectApartados();
+}else if(id_rol === 2){
+    selectRelApartadosUser(id_user);
+}
+</script>

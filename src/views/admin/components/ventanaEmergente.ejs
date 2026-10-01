@@ -1,0 +1,84 @@
+<link rel="stylesheet" href="/styles/output.css">
+<div id="modal" class="w-full h-full fixed inset-0 flex items-center justify-center z-50 hidden transition-all duration-300" style="background: rgba(194, 194, 194, 0.7);">
+    <div class="relative bg-transparent rounded-lg shadow-2xl max-w-4xl w-full mx-4">
+        
+        <!-- Botón de cerrar (sin título) -->
+        <button id="closeModalBtn" class="absolute -top-4 -right-4 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 shadow-lg transition duration-300 z-10 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <!-- Contenedor del contenido multimedia -->
+        <div id="modalContent" class="rounded-lg overflow-hidden">
+            <!-- Aquí se cargará dinámicamente el video o la imagen -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configuración del contenido multimedia
+    // Cambia estos valores para mostrar diferente contenido
+    const multimediaConfig = {
+        type: 'video', // 'video' o 'image'
+        url: 'https://www.w3schools.com/html/mov_bbb.mp4', // URL del video o imagen
+        poster: '' // solo para video (opcional)
+    };
+
+    // Obtener elementos del DOM
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modalContent');
+    const openModalBtn = document.getElementById('openModalBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    // Función para cerrar el modal
+    function closeModal() {
+        modal.classList.add('hidden');
+        // Opcional: detener el video cuando se cierra
+        const video = modalContent.querySelector('video');
+        if (video) {
+            video.pause();
+        }
+    }
+
+    // Función para abrir el modal
+    function openModal() {
+        // Limpiar contenido previo
+        modalContent.innerHTML = '';
+        
+        // Crear elemento según el tipo
+        if (multimediaConfig.type === 'video') {
+            const video = document.createElement('video');
+            video.controls = true;
+            video.autoplay = false;
+            video.className = 'w-full h-auto max-h-[80vh] object-contain bg-black';
+            video.poster = multimediaConfig.poster || '';
+            
+            const source = document.createElement('source');
+            source.src = multimediaConfig.url;
+            source.type = 'video/mp4';
+            
+            video.appendChild(source);
+            video.innerHTML += 'Tu navegador no soporta el elemento video.';
+            modalContent.appendChild(video);
+        } 
+        else if (multimediaConfig.type === 'image') {
+            const img = document.createElement('img');
+            img.src = multimediaConfig.url;
+            img.alt = 'Contenido multimedia';
+            img.className = 'w-full h-auto max-h-[80vh] object-contain';
+            modalContent.appendChild(img);
+        }
+        
+        // Mostrar modal
+        modal.classList.remove('hidden');
+    }
+
+    // Eventos
+    // openModalBtn.addEventListener('click', openModal);
+    closeModalBtn.addEventListener('click', closeModal);
+    
+    // ❌ Eliminado: cerrar al hacer clic fuera del contenido
+    // ❌ Eliminado: cerrar con tecla ESC
+    // Ahora solo se cierra con el botón de cerrar
+</script>

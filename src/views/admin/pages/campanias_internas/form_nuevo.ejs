@@ -1,0 +1,93 @@
+<div class="shadow-lg p-4 bg-white p-4 rounded-xl bg-white h-[700px] overflow-hidden">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nueva Campaña Interna</p>
+    <div class="h-[600px] overflow-x-scroll">
+        <form id="formCampania">
+            <%- include('../../components/inputFile',{
+                formato:'JPG, PNG, GIF', 
+                id:'imgCampania', 
+                name:'imgCampania', 
+                titulo:'Imagen de la Campaña Interna'}) 
+            %>
+
+            <%- include('../../components/textarea',{
+                titulo:'Descripción de la Campaña Interna:', 
+                id:'descripcion', 
+                name:'descripcion', 
+                placeholder:'Descripción de la noticia'}) 
+            %>
+
+            <%- include('../../components/select',{
+                titulo:'Asociar una página a la Campaña Interna (opcional):',
+                texto:'Seleccione una página:', 
+                id:'pagina',
+                name:'pagina',
+                opciones:paginas, 
+                opcionId:'id_pagina',
+                opcionNombre:'nombre_pag'}) 
+            %>
+            <%- include('../../components/input',{
+                titulo:'URL externa (opcional):', 
+                type:'text', 
+                id:'url_externa', 
+                name:'url_externa', 
+                placeholder:'URL Externa'}) 
+            %>
+    
+            <%- include('../../components/btnGuardar',{
+                texto:'Guardar Campaña Interna', 
+                type:'submit', 
+                id:'btnGuardarCampania'}) 
+            %>
+        </form>
+    </div>
+</div>
+<%- include('../../components/scriptValidator.ejs',{}) %>
+<script >
+
+    const validarCampania=[
+        {name:'imgCampania', validate:'required|file_max:5|file_type:image/png,image/jpeg,image/webp'},
+        {name:'descripcion', validate:'required'},
+    ];
+
+    const formCampania = document.getElementById('formCampania');
+
+    formCampania.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarCampania);
+
+        if(valid){
+            const formData = new FormData(formCampania);
+
+            const response =await fetch('/campanias_internas?uploadPath=/home/campanias_internas&fieldName=imgCampania',{
+                method: 'POST',
+                body: formData
+            }); 
+
+            const data = await response.json();
+
+            if(response.ok){
+                refrescarTabla('#tablaCampania')
+                    clearAllFiles();
+                    formCampania.reset();
+                    document.querySelectorAll('.msg').forEach(el => {
+                        el.className = 'msg';
+                        el.innerHTML = '';
+                    });
+
+                    // Remover clases de error/éxito de todos los campos
+                    document.querySelectorAll('.field').forEach(el => {
+                        el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+                    });
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registro agregado con éxito",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+            }
+        }
+
+    })
+
+</script>

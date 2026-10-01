@@ -1,0 +1,112 @@
+<div class="shadow-lg p-4 bg-white  p-4 rounded-xl bg-white">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-list-task"></i> Listado de Sistemas</p>
+    <div class="basis-2/3 mb:basis-2/3">
+        <%- include('../../components/table',{idTable:'tablaSistemas'}) %>
+        <%- include('../../components/scriptDataTable') %>
+    </div>
+</div>
+
+<%- include('../../components/modal',{idModal:"modalSistemas", titulo:"Editar Sistema",body:'../pages/sistemas/form_editar.ejs'}) %>
+
+<script >
+
+    //columnas de la tabla 
+    const columnasTableSistemas=[
+        {title:'Id',data:'id_sistema',width:'50px',className:'text-center'},
+        {title:'Nombre del sistema',data:'nombre_sistema',width:'250px'},
+        {title:'URL del sistema',data:'url_sistema',width:'200px'},
+        {title:'Estatus',data:'activo',
+            render:function(data,type,row,meta){
+                if(data){
+                    return `
+                        <span class="inline-flex items-center rounded-md bg-green-600 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-700/10">
+                            Activo
+                        </span>
+                    `;
+                }else{
+                    return `
+                        <span class="inline-flex items-center rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-red-700/10">
+                            Inactivo
+                        </span>
+                    `;
+                }
+            }
+        },
+        {title:'Fecha de registro',data:'f_registro', className: "whitespace-nowrap"},
+        {title:'Última actualización',data:'f_modificacion', className: "whitespace-nowrap"},
+        {title:'Acciones',data:null,
+            render:function(data,type,row,meta){
+                let html = "";
+                html += `<a onclick="openModal(${row.id_sistema},obtenerSistema)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="bi bi-pencil-square"></i></a>`;
+                if(row.activo){
+                    html +=`
+                        <a onclick="activarSistema(${row.id_sistema},'false')" class="text-red-500 hover:text-red-700"><i class="bi bi-x-circle"></i></a>
+                    `;
+                }else{
+                    html += `
+                        <a onclick="activarSistema(${row.id_sistema},'true')" class="text-green-500 hover:text-green-700"><i class="bi bi-check-circle"></i></a>
+                    `;
+                }
+                return html;
+            }
+        },
+
+    ];
+
+
+    /*
+        función verTabla que se encuentra en la vista del componente table 
+        verTabla(Columnas,id de la tabla,ruta de los datos);
+    */
+    const id = <%=id_user%>
+    console.log(id);
+    verTabla(columnasTableSistemas,{},'#tablaSistemas','/sistemas/all');
+
+    /*
+        Función para obtener los datos de la noticia a editar, pasando el id de dicha noticia.
+        En las columnas se pasa un link con un onclick y la funcion openModal con los parametros del id de la noticia y la funcion obtenerNoticia que es un callback
+    */
+
+    async function  obtenerSistema(id){
+        const response = await fetch(`/sistemas/${id}`);
+        const data = await response.json();
+        if(data.success){
+            document.getElementById('id_sistema').value = data.data.id_sistema;
+            document.getElementById('editNombreSistema').value = data.data.nombre_sistema;
+            document.getElementById('editUrlSistema').value = data.data.url_sistema;
+            document.getElementById('editDescripcion').value = data.data.descripcion;
+            document.getElementById('editSiglas').value = data.data.siglas;
+        }
+    }
+
+    /*
+        función que llama a la ruta activar y manda el estatus para activar o desactivar la noticia.
+    */
+    async function activarSistema(id,status){
+        const formData = new FormData();
+        formData.append('status',status);
+        const response = await fetch(`/sistemas/activar/${id}`,{
+            method: 'PUT',
+            body:formData
+        });
+        const data = await response.json();
+        console.log(data);
+
+        //Esta funcion viene de la vista table y refresca eb tiempo real la tabla
+        refrescarTabla('#tablaSistemas')
+    }
+
+    closeModalBtn.addEventListener('click',()=>{
+            // Limpiar todos los mensajes de error
+        document.querySelectorAll('.msg').forEach(el => {
+            el.className = 'msg';
+            el.innerHTML = '';
+        });
+
+        // Remover clases de error/éxito de todos los campos
+        document.querySelectorAll('.field').forEach(el => {
+            el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+        });
+        closeModal();
+    });
+</script>

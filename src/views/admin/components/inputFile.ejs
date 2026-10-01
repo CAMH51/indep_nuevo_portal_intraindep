@@ -1,0 +1,153 @@
+
+    <label class="text-1xl font-bold text-amarillo-oscuro p-2" for=""><%=titulo%></label>
+    <div class="field">
+    <div class="w-full">
+        <!-- Componente de input file moderno -->
+            
+            <!-- Input oculto -->
+                 <input type="file" id="<%=id%>" name="<%=name%>" accept="<%=formato%>" class="hidden" multiple>
+                 
+                 <!-- Área de dropzone -->
+                 <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-blue-50 group">
+                     <div class="flex flex-col items-center space-y-3">          
+                         <!-- Texto -->
+                         <div>
+                             <p class="text-gray-600 font-medium">Arrastra y suelta tu archivo aquí</p>
+                             <p class="text-gray-400 text-sm mt-1">o</p>
+                             <button type="button" id="selectFileBtn" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm font-medium shadow-sm hover:shadow">
+                                 Seleccionar archivo
+                                </button>
+                            </div>
+                            
+                            <p class="text-gray-400 text-xs mt-3">FORMATOS PERMITIDOS:<%=formato%></p>
+                </div>
+            </div>
+            
+            <!-- Lista de archivos seleccionados -->
+            <div id="fileList" class="mt-6 space-y-2 hidden">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Archivos seleccionados:</h3>
+                <div id="filesContainer" class="space-y-2 max-h-48 overflow-y-auto"></div>
+            </div>
+            
+            <!-- Botón de acción -->
+            <div id="actionButtons" class="mt-6 hidden">
+                <button type="button" id="clearFilesBtn" class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm font-medium">
+                    Limpiar todo
+                </button>
+            </div>
+        </div>
+        <p class="msg"></p>
+    </div>
+        
+    <script >
+
+        const fileInput = document.getElementById('<%=id%>');
+        const dropzone = document.getElementById('dropzone');
+        const selectFileBtn = document.getElementById('selectFileBtn');
+        const fileListDiv = document.getElementById('fileList');
+        const filesContainer = document.getElementById('filesContainer');
+        const actionButtons = document.getElementById('actionButtons');
+        const clearFilesBtn = document.getElementById('clearFilesBtn');
+        
+        let selectedFiles = [];
+        
+        // Función para actualizar la lista de archivos
+        function updateFileList() {
+            if (selectedFiles.length > 0) {
+                fileListDiv.classList.remove('hidden');
+                actionButtons.classList.remove('hidden');
+                
+                filesContainer.innerHTML = '';
+                selectedFiles.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'flex items-center justify-between bg-gray-50 rounded-lg p-3 group hover:bg-gray-100 transition-colors';
+                    
+                    const fileIcon = file.type.startsWith('image/') ? 'fa-image' : 
+                                    file.type === 'application/pdf' ? 'fa-file-pdf' : 'fa-file';
+                    
+                    const fileSize = (file.size / 1024).toFixed(1);
+                    
+                    fileItem.innerHTML = `
+                        <div class="flex items-center space-x-3 flex-1">
+                            <i class="fas ${fileIcon} text-gray-500"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-700 truncate">${file.name}</p>
+                                <p class="text-xs text-gray-400">${fileSize} KB</p>
+                            </div>
+                        </div>
+                        <button onclick="removeFile(${index})" class="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    filesContainer.appendChild(fileItem);
+                });
+            } else {
+                fileListDiv.classList.add('hidden');
+                actionButtons.classList.add('hidden');
+            }
+        }
+        
+        // Función para eliminar archivo
+        window.removeFile = function(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+            
+            // Actualizar el input file
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => dt.items.add(file));
+            fileInput.files = dt.files;
+        }
+        
+        // Función para limpiar todo
+        function clearAllFiles() {
+            selectedFiles = [];
+            fileInput.value = '';
+            updateFileList();
+        }
+        
+        // Evento para seleccionar archivos
+        selectFileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.click();
+        });
+        
+        dropzone.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            selectedFiles = [...selectedFiles, ...files];
+            updateFileList();
+        });
+        
+        // Drag and drop events
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-blue-500', 'bg-blue-50');
+        });
+        
+        dropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+        
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+            
+            const files = Array.from(e.dataTransfer.files);
+            selectedFiles = [...selectedFiles, ...files];
+            updateFileList();
+            
+            // Actualizar el input file
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => dt.items.add(file));
+            fileInput.files = dt.files;
+        });
+        
+        clearFilesBtn.addEventListener('click', clearAllFiles);
+    </script>
+
+

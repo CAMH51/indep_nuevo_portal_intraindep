@@ -1,0 +1,101 @@
+<div class="shadow-lg p-4 bg-white  p-4 rounded-xl bg-white h-[700px] overflow-hidden">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nuevo Servicio o Promoción</p>
+    <div class="h-[600px] overflow-x-scroll">
+        <form id="formServicio">
+            <%- include('../../components/inputFile',{
+                formato:'JPG, PNG, GIF', 
+                id:'imgServicio', 
+                name:'imgServicio', 
+                titulo:'Imagen del Servicio o Promoción'}) 
+            %>
+
+            <%- include('../../components/input',{
+                titulo:'Titulo del Servicio o Promoción:', 
+                type:'text', 
+                id:'titulo', 
+                name:'titulo', 
+                placeholder:'Título del servicio o promoción'}) 
+            %>
+
+            <%- include('../../components/textarea',{
+                titulo:'Descripción del Servicio o Promoción:', 
+                id:'descripcion', 
+                name:'descripcion', 
+                placeholder:'Descripción del servicio o promoción'}) 
+            %>
+
+            <%- include('../../components/select',{
+                titulo:'Asociar una página al Servicio o Promoción (opcional):',
+                texto:'Seleccione una página:', 
+                id:'pagina',
+                name:'pagina',
+                opciones:paginas, 
+                opcionId:'id_pagina',
+                opcionNombre:'nombre_pag'}) 
+            %>
+            <%- include('../../components/input',{
+                titulo:'URL externa (opcional):', 
+                type:'text', 
+                id:'url_externa', 
+                name:'url_externa', 
+                placeholder:'URL Externa'}) 
+            %>
+    
+            <%- include('../../components/btnGuardar',{
+                texto:'Guardar Servicio o Promoción', 
+                type:'submit', 
+                id:'btnGuardarServicio'}) 
+            %>
+        </form>
+    </div>
+</div>
+<%- include('../../components/scriptValidator.ejs',{}) %>
+<script >
+
+    const validarServicios=[
+        {name:'imgServicio', validate:'required|file_max:5|file_type:image/png,image/jpeg,image/webp'},
+        {name:'titulo', validate:'required'},
+    ];
+
+    const formServicio = document.getElementById('formServicio');
+
+    formServicio.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarServicios);
+
+        if(valid){
+            const formData = new FormData(formServicio);
+
+            const response =await fetch('/servicios_promociones?uploadPath=/home/servicios_promociones&fieldName=imgServicio',{
+                method: 'POST',
+                body: formData
+            }); 
+
+            const data = await response.json();
+
+            if(response.ok){
+                refrescarTabla('#tablaServicio')
+                    clearAllFiles();
+                    formServicio.reset();
+                    document.querySelectorAll('.msg').forEach(el => {
+                        el.className = 'msg';
+                        el.innerHTML = '';
+                    });
+
+                    // Remover clases de error/éxito de todos los campos
+                    document.querySelectorAll('.field').forEach(el => {
+                        el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+                    });
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registro agregado con éxito",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+            }
+        }
+
+    })
+
+</script>

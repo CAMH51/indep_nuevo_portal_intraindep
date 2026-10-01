@@ -1,0 +1,55 @@
+<section class="w-full p-2" id="servicios">
+ <%if(serviciosPromociones && serviciosPromociones.length == 0){%>
+  <div class="flex justify-between items-center">
+      <%- include('../components2/titulo.ejs',{titulo:"Servicios y Promociones"}) %>
+  </div>
+  
+  <div class="bg-white-card text-center text-muted py-4" style="font-size:.87rem;">
+    <i class="bi bi-emoji-smile" style="font-size:2.5rem;color:#ccc;"></i>
+    <p class="mt-2 mb-0">No hay Servicios y Promociones Publicadas.</p>
+  </div>
+  <%}else{%>
+    <%- include('../components2/titulo.ejs',{titulo:'Servicios y Promociones'}) %>
+    <div class="flex gap-2">
+      <div class="swiper-servicios-button-prev cursor-pointer bg-gray-200 p-2 rounded-full">
+        <i class="bi bi-caret-left"></i>
+      </div>
+      <div class="swiper-servicios-button-next cursor-pointer bg-gray-200 p-2 rounded-full">
+        <i class="bi bi-caret-right"></i>
+      </div>
+    </div>
+    <div class="swiper serviciosSwiper ">
+        <div class="swiper-wrapper m-3">
+          <% serviciosPromociones.forEach((n, i) => { %>
+            <div class="swiper-slide">
+              <div class="relative bg-white rounded-2xl shadow-md overflow-hidden">
+                <!-- Imagen -->
+                <img src="/imagenes/home/servicios_promociones/<%= n.archivo.nombre_archivo %>" 
+                    class="w-full h-64 object-cover">
+                
+                <!-- Contenido superpuesto -->
+                <div class="absolute inset-0 flex flex-col justify-between p-4 bg-gradient-to-t from-black/70 to-transparent">
+                  <!-- El gradiente mejora la legibilidad del texto -->
+                  <div></div> <!-- Espaciador vacío para empujar el contenido abajo -->
+                  
+                  <div class="text-center">
+                    <span class="text-white text-xl font-semibold block mb-3"><%= n.titulo %></span>
+                    <a class="inline-block bg-rojo-claro hover:bg-red-700 rounded-xl px-4 py-2 text-white no-underline transition-colors" 
+                      href="<%= n.url_pagina !== null ? n.url_pagina :  n.fk_id_pagina !== null ?'/'+ n.pagina.ruta_pag + '/' + n.pagina.nombre_pag : '#' %>"
+                      target="<% if(n.url_pagina !== null){ %> _blank <%}%>"
+                      >Ver Más.....</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <% }) %>
+
+        </div>
+        <div class="swiper-pagination-servicios"></div>
+    </div>
+    <%}%>
+  </section>
+
+<script>
+    const serviciosSwiper = new Swiper('.serviciosSwiper', { slidesPerView: 1, spaceBetween: 20, loop: true, autoplay: { delay: 5000 }, pagination: { el: '.swiper-pagination-servicios', clickable: true }, navigation: { nextEl: '.swiper-servicios-button-next', prevEl: '.swiper-servicios-button-prev' }, breakpoints: { 640: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } } });
+</script>

@@ -1,0 +1,123 @@
+<div class="shadow-lg p-4 bg-white  p-4 rounded-xl bg-white">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-list-task"></i> Listado de Servicios y Promociones</p>
+    <div class="basis-2/3 mb:basis-2/3">
+        <%- include('../../components/table',{idTable:'tablaServicio'}) %>
+        <%- include('../../components/scriptDataTable') %>
+    </div>
+</div>
+
+<%- include('../../components/modal',{idModal:"modalServicio", titulo:"Editar Servicio o Promoción",body:'../pages/servicios_promociones/form_editar.ejs'}) %>
+
+<script >
+
+    //columnas de la tabla 
+    const columnasTableServicios=[
+        {title:'Id',data:'id_servicio_promocion',width:'50px',className:'text-center'},
+        {title:'Archivo',data:'archivo.nombre_archivo',width:'300px',
+            render:function(data,type,row,meta){
+                return `
+                    <span class="inline-flex items-center rounded-md bg-cyan-600 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-cyan-700/10">
+                        ${data}
+                    </span>
+                `
+            }
+        },
+        {title:'Página Asociada',data:'pagina.nombre_pag',width:'200px'},
+        {title:'Titulo',data:'titulo',width:'350px'},
+        {title:'Descripcion',data:'descripcion',width:'350px'},
+        {title:'Estatus',data:'activo',
+            render:function(data,type,row,meta){
+                if(data){
+                    return `
+                        <span class="inline-flex items-center rounded-md bg-green-600 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-700/10">
+                            Activo
+                        </span>
+                    `;
+                }else{
+                    return `
+                        <span class="inline-flex items-center rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-red-700/10">
+                            Inactivo
+                        </span>
+                    `;
+                }
+            }
+        },
+        {title:'Fecha de registro',data:'f_registro', className: "whitespace-nowrap"},
+        {title:'Última actualización',data:'f_modificacion', className: "whitespace-nowrap"},
+        {title:'Acciones',data:null,
+            render:function(data,type,row,meta){
+                let html = "";
+                html += `<a onclick="openModal(${row.id_servicio_promocion},obtenerServicio)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="bi bi-pencil-square"></i></a>`;
+                if(row.activo){
+                    html +=`
+                        <a onclick="activarServicio(${row.id_servicio_promocion},'false')" class="text-red-500 hover:text-red-700"><i class="bi bi-x-circle"></i></a>
+                    `;
+                }else{
+                    html += `
+                        <a onclick="activarServicio(${row.id_servicio_promocion},'true')" class="text-green-500 hover:text-green-700"><i class="bi bi-check-circle"></i></a>
+                    `;
+                }
+                return html;
+            }
+        },
+
+    ];
+
+
+    /*
+        función verTabla que se encuentra en la vista del componente table 
+        verTabla(Columnas,id de la tabla,ruta de los datos);
+    */
+
+    verTabla(columnasTableServicios,{},'#tablaServicio','/servicios_promociones/user/<%=id_user%>');
+
+    /*
+        Función para obtener los datos del servicio o promoción a editar, pasando el id de dicho servicio o promoción.
+        En las columnas se pasa un link con un onclick y la funcion openModal con los parametros del id del servicio o promocióny la funcion obtenerServicio que es un callback
+    */
+
+    async function  obtenerServicio(id){
+        const response = await fetch(`/servicios_promociones/${id}`);
+        const data = await response.json();
+        if(data.success){
+            document.getElementById('id_servicio_promocion').value = data.data.id_servicio_promocion;
+            document.getElementById('badgeServicio').textContent = data.data.archivo.nombre_archivo || "";
+            document.getElementById('editTitulo').value = data.data.titulo;
+            document.getElementById('editDescripcion').value = data.data.descripcion;
+            document.getElementById('editPagina').value = data.data.fk_id_pagina || "";
+            document.getElementById('editUrlExterna').value = data.data.url_pagina;
+        }
+    }
+
+    /*
+        función que llama a la ruta activar y manda el estatus para activar o desactivar la noticia.
+    */
+    async function activarServicio(id,status){
+        const formData = new FormData();
+        formData.append('status',status);
+        const response = await fetch(`/servicios_promociones/activar/${id}`,{
+            method: 'PUT',
+            body:formData
+        });
+        const data = await response.json();
+        console.log(data);
+
+        //Esta funcion viene de la vista table y refresca eb tiempo real la tabla
+        refrescarTabla('#tablaServicio')
+    }
+
+    closeModalBtn.addEventListener('click',()=>{
+            // Limpiar todos los mensajes de error
+        document.querySelectorAll('.msg').forEach(el => {
+            el.className = 'msg';
+            el.innerHTML = '';
+        });
+
+        // Remover clases de error/éxito de todos los campos
+        document.querySelectorAll('.field').forEach(el => {
+            el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+        });
+        clearAllFilesEdit();
+        closeModal();
+    });
+</script>

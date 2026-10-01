@@ -1,0 +1,387 @@
+
+<style>
+
+  /* ── BARRA PRINCIPAL ── */
+  .avisos-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #ffffff;
+    border: 1px solid #e2ddd7;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 48px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.04);
+  }
+
+  /* ── ETIQUETA ── */
+  .label {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #8b1a38;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 0 18px;
+    height: 100%;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .label::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    background: #8b1a38;
+    clip-path: polygon(0 0, 0 100%, 100% 100%);
+  }
+
+  .label-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ff8fa3;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: .45; transform: scale(.7); }
+  }
+
+  /* Cuando no hay datos, apagar el dot */
+  .avisos-bar.empty .label-dot {
+    animation: none;
+    background: rgba(255,255,255,.35);
+  }
+
+  /* ── TICKER ── */
+  .ticker-wrap {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+    padding-left: 20px;
+  }
+
+  .ticker-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-right: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition: opacity .38s ease, transform .38s ease;
+  }
+
+  .ticker-slide.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .ticker-slide.exit {
+    opacity: 0;
+    transform: translateY(-12px);
+    pointer-events: none;
+  }
+
+  /* Estado vacío: sin animación, centrado */
+  .ticker-slide.static-empty {
+    position: relative;
+    opacity: 1;
+    pointer-events: none;
+    transform: none;
+    transition: none;
+    justify-content: flex-start;
+  }
+
+  .ticker-text {
+    font-size: 13.5px;
+    color: #3d3730;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1;
+  }
+
+  .ticker-text strong {
+    font-weight: 600;
+    color: #8b1a38;
+    margin-right: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    background: #fbedf0;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid #f2c4ce;
+  }
+
+  /* badge vacío */
+  .ticker-text strong.empty-badge {
+    background: #f0ede8;
+    color: #9e9389;
+    border-color: #ddd8d2;
+  }
+
+  .ticker-text.muted {
+    color: #9e9389;
+    font-style: italic;
+  }
+
+  .btn-ver {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #8b1a38;
+    text-decoration: none;
+    border: 1px solid #e6c0c9;
+    border-radius: 6px;
+    padding: 4px 11px;
+    background: #fff;
+    transition: background .18s, color .18s, border-color .18s;
+    white-space: nowrap;
+  }
+
+  .btn-ver:hover {
+    background: #8b1a38;
+    color: #fff;
+    border-color: #8b1a38;
+  }
+
+  /* ── DIVISOR ── */
+  .divider {
+    width: 1px;
+    height: 28px;
+    background: #e2ddd7;
+    flex-shrink: 0;
+  }
+
+  /* ── CONTROLES ── */
+  .controls {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 10px 0 8px;
+  }
+
+  .counter {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #9e9389;
+    min-width: 32px;
+    text-align: center;
+  }
+
+  .arrow {
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #9e9389;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .16s, color .16s;
+  }
+
+  .arrow:hover {
+    background: #f5f1ed;
+    color: #3d3730;
+  }
+
+  .arrow:disabled,
+  .controls.hidden {
+    display: none;
+  }
+</style>
+
+
+<!-- ═══════════════════════════════════════════
+     DEMO 1 — Con datos (animación activa)
+════════════════════════════════════════════ -->
+<div class="avisos-bar mt-3 mb-3" id="bar-con-datos">
+  <div class="label">
+    <span class="label-dot"></span>
+    Avisos Importantes
+  </div>
+  <div class="ticker-wrap" id="ticker-con-datos"></div>
+  <div class="divider" id="div1"></div>
+  <div class="controls" id="ctrl-con-datos">
+    <button class="arrow" id="prev1" aria-label="Anterior">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="counter" id="cnt1"></span>
+    <button class="arrow" id="next1" aria-label="Siguiente">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   Función principal que inicializa una barra
+   ───────────────────────────────────────────── */
+function initAvisos({ barId, tickerId, prevId, nextId, counterId, dividerId, ctrlId, avisos_vigentes }) {
+
+  const labelMap = {
+    noticia: "Noticias",
+    campania_interna: "Campaña Interna",
+    servicio_promocion: "Servicios y Promociones",
+    evento_aviso: "Eventos y Avisos",
+    cumpleanio: "Cumpleaños",
+    link: "Accesos Rápidos"
+  };
+
+  // Parsear avisos
+  let avisos = [];
+  if (Array.isArray(avisos_vigentes) && avisos_vigentes.length > 0) {
+    avisos_vigentes.forEach(vigente => {
+      if (!vigente) return;
+      const pageUrl = (vigente.fk_id_pagina && vigente.pagina && vigente.pagina.ruta_pag && vigente.pagina.nombre_pag)
+        ? '/' + vigente.pagina.ruta_pag + '/' + vigente.pagina.nombre_pag
+        : '#';
+      
+      let texto = vigente.titulo ? vigente.titulo : '';
+      if (vigente.descripcion && vigente.descripcion.trim()) {
+        texto += texto ? ` (${vigente.descripcion})` : vigente.descripcion;
+      }
+      if (!texto) texto = 'Sin título';
+
+      avisos.push({
+        tipo:  "Importante",
+        texto: texto,
+        url:   pageUrl
+      });
+    });
+  }
+
+  const ticker  = document.getElementById(tickerId);
+  const bar     = document.getElementById(barId);
+  if (!bar || !ticker) return;
+
+  /* ── SIN DATOS: render estático, sin controles ── */
+  if (!avisos.length) {
+    bar.classList.add('empty');
+
+    const slide = document.createElement('div');
+    slide.className = 'ticker-slide static-empty';
+    slide.innerHTML = `
+      <span class="ticker-text muted">
+        <strong class="empty-badge">Sin avisos</strong>
+        No hay avisos importantes en este momento.
+      </span>`;
+    ticker.appendChild(slide);
+
+    // Ocultar divisor y controles si existen
+    const div  = document.getElementById(dividerId);
+    const ctrl = document.getElementById(ctrlId);
+    if (div)  div.style.display  = 'none';
+    if (ctrl) ctrl.style.display = 'none';
+    return; // nada más que hacer
+  }
+
+  /* ── CON DATOS: render animado ── */
+  avisos.forEach((n, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'ticker-slide' + (i === 0 ? ' active' : '');
+    slide.innerHTML = `
+      <span class="ticker-text"><strong>${n.tipo}:</strong> ${n.texto}</span>
+      <a href="${n.url}" class="btn-ver">Ver
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>`;
+    ticker.appendChild(slide);
+  });
+
+  const slides  = ticker.querySelectorAll('.ticker-slide');
+  const counter = document.getElementById(counterId);
+  const prevBtn = document.getElementById(prevId);
+  const nextBtn = document.getElementById(nextId);
+
+  let current = 0, animating = false, timer;
+
+  if (counter) counter.textContent = `1 / ${avisos.length}`;
+
+  // Si solo hay 1 aviso, ocultar controles
+  if (avisos.length === 1) {
+    const ctrl = document.getElementById(ctrlId);
+    const div  = document.getElementById(dividerId);
+    if (ctrl) ctrl.style.display = 'none';
+    if (div)  div.style.display  = 'none';
+  }
+
+  function goTo(index, dir = 1) {
+    if (animating || avisos.length <= 1) return;
+    animating = true;
+
+    const prev = current;
+    current = ((index % avisos.length) + avisos.length) % avisos.length;
+
+    slides[prev].classList.add('exit');
+    slides[prev].classList.remove('active');
+
+    slides[current].style.transition = 'none';
+    slides[current].style.transform  = `translateY(${dir > 0 ? '12px' : '-12px'})`;
+    slides[current].style.opacity    = '0';
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      slides[current].style.transition = '';
+      slides[current].style.transform  = '';
+      slides[current].style.opacity    = '';
+      slides[current].classList.add('active');
+    }));
+
+    setTimeout(() => {
+      slides[prev].classList.remove('exit');
+      animating = false;
+    }, 420);
+
+    if (counter) counter.textContent = `${current + 1} / ${avisos.length}`;
+    resetTimer();
+  }
+
+  function resetTimer() {
+    clearInterval(timer);
+    if (avisos.length > 1) timer = setInterval(() => goTo(current + 1, 1), 3500);
+  }
+
+  prevBtn?.addEventListener('click', () => goTo(current - 1, -1));
+  nextBtn?.addEventListener('click', () => goTo(current + 1,  1));
+  ticker.addEventListener('mouseenter', () => clearInterval(timer));
+  ticker.addEventListener('mouseleave', resetTimer);
+
+  resetTimer();
+}
+
+const avisos_vigentes = <%- typeof avisosImportantes !== 'undefined' && avisosImportantes ? JSON.stringify(avisosImportantes) : '[]' %>;
+console.log(avisos_vigentes);
+
+initAvisos({
+  barId: 'bar-con-datos', tickerId: 'ticker-con-datos',
+  prevId: 'prev1', nextId: 'next1', counterId: 'cnt1',
+  dividerId: 'div1', ctrlId: 'ctrl-con-datos',
+  avisos_vigentes
+});
+
+
+
+</script>

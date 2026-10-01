@@ -1,0 +1,71 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 mb-8">
+                        <!-- Card 1 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm font-medium">Páginas Actuales</p>
+                                    <p class="text-2xl font-bold text-gray-800 mt-1"><%=paginas.length%></p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                    <i class="bi bi-file-text"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <%if(user.id_rol === 1){%>
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-500 text-sm font-medium">Storages Activo</p>
+                                        <p class="text-2xl font-bold text-gray-800 mt-1"><%= storages[0].name %></p>
+                                    </div>
+                                    <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                        <i class="bi bi-archive"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Card 3 -->
+                        <%}else{%>
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-500 text-sm font-medium">Apartados Activos</p>
+                                        <%apartadosAsignados.forEach(apartado => {%>
+                                            <span class="inline-flex items-center rounded-md bg-gris px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-700/10">
+                                                <%=apartado.apartado.apartado%>
+                                            </span>
+                                        <%});%>
+                                    </div>
+                                    <div class="w-12 h-12 rounded-full bg-sky-50 flex items-center justify-center text-sky-600">
+                                        <i class="bi bi-ui-checks-grid"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        <%}%>
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <%
+                                            let radioIdCounter = 0;
+                                            let hasChecked = false;
+                                        %>
+                                        <p class="text-gray-500 text-sm font-medium">Directorio Principal</p>
+                                        <% if (storages.length > 0) { %>
+                                            <%
+                                                const radioId = `dest_${storages[0].id_storage}_${radioIdCounter++}`;
+                                                const isChecked = !hasChecked;
+                                                if (isChecked) hasChecked = true;
+                                            %>
+                                        <p class="text-2xl font-bold text-gray-800 mt-1">
+                                             <input type="radio" name="destination" id="<%= radioId %>" value="<%= storages[0].id_storage %>|<%= storages[0].directorio_principal %>" <%= isChecked ? 'checked' : '' %> onchange="updateFolderPages('<%= storages.id %>', '<%= storages[0].directorio_principal %>')" style="margin-right: 8px; accent-color: var(--amber);">
+                                            <%= storages[0].directorio_principal %>
+                                        </p>
+                                        <% } else { %>
+                                        <div style="font-size:13px;color:var(--txt2);font-style:italic;padding-left:0">Sin carpetas principales</div>
+                                        <% } %>
+                                    </div>
+                                    <div class="w-12 h-12 rounded-full bg-sky-50 flex items-center justify-center text-sky-600">
+                                        <i class="bi bi-folder"></i>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>

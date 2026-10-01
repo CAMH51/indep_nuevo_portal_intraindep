@@ -1,0 +1,93 @@
+<div class="shadow-lg p-4 bg-white p-4 rounded-xl bg-white">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nuevo Módulo</p>
+    <form id="formModulo">
+
+         <%- include('../../../components/input',{
+            titulo:'Módulo:', 
+            type:'text', 
+            id:'modulo', 
+            name:'modulo', 
+            placeholder:'Módulo'}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Nombre del módulo:', 
+            type:'text', 
+            id:'nombre', 
+            name:'nombre', 
+            placeholder:'Nombre del módulo'}) 
+        %>
+
+        <%- include('../../../components/textarea',{
+            titulo:'Descripción:', 
+            id:'descripcion', 
+            name:'descripcion', 
+            placeholder:'Descripción'}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Ruta del módulo:', 
+            type:'text', 
+            id:'ruta', 
+            name:'ruta', 
+            placeholder:'Ruta del módulo'}) 
+        %>
+
+        <%- include('../../../components/ckeck',{
+            titulo:'Catálogo:', 
+            id:'iscatalog', 
+            name:'iscatalog' }) 
+        %>
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Módulo', 
+            type:'submit', 
+            id:'btnGuardarModulo'}) 
+        %>
+    </form>
+</div>
+
+<%- include('../../../components/scriptValidator.ejs',{}) %>
+
+<script >
+
+    const validarModulos =[
+        {name:'modulo', validate:'required|min:5'},
+        {name:'nombre', validate:'required|min:5'},
+        {name:'ruta', validate:'required'}
+    ];
+
+    const formModulo = document.getElementById('formModulo');
+
+    formModulo.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarModulos);
+        
+        if(valid){
+            
+            const formData = new FormData(formModulo);
+    
+            const response =await fetch('/modulos',{
+                method: 'POST',
+                body: formData
+            }); 
+    
+            const data = await response.json();
+    
+            if(data.success){
+                // Si solo quieres recargar los datos actuales
+                refrescarTabla('#tablaModulos')
+                formModulo.reset();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro agregado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+
+    });
+
+</script>

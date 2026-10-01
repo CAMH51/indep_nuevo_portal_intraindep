@@ -1,0 +1,21 @@
+
+
+    <div class="col-lg-12" >
+      <div class="row g-2">
+        <%if(ligas.length === 0){%>
+          <%- include('../components_flowbite/aviso_sin_registros.ejs',{titulo:'No existen ligas de interés publicadas.'}) %>
+        <%}else{%>
+          <% ligas.forEach(item =>{ %>
+            <div class="">
+              <a 
+              href="<%= item.url_liga !== null ? item.url_liga : item.fk_id_pagina !== null ? '/'+ item.pagina.ruta_pag + '/' + item.pagina.nombre_pag : '#'  %>"  
+              class="underline font-semibold hover:no-underline"
+              target="_blank"
+              >
+              <%= item.nombre_liga %>
+              </a>
+            </div>
+          <%});%>
+        <%}%>    
+      </div>
+    </div>

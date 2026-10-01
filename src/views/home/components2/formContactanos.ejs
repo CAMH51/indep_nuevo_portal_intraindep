@@ -1,0 +1,28 @@
+<section class="w-full p-2">
+<div class="flex justify-between items-center border-l-4 border-rojo-oscuro"><h2 class="text-xl font-bold text-rojo-claro pl-3"> Contáctanos</h2></div>
+    <form id="formContactanos">
+        <div class="row">
+            <div class="col-sm-12 col-md-12">
+                <%- include('../../admin/components/input.ejs',{
+                    titulo:'Correo Electrónico:', 
+                    type:'email', 
+                    id:'email', 
+                    name:'email', 
+                    placeholder:'Ingrese su correo electrónico'}) 
+                %>
+                <%- include('../../admin/components/textarea',{
+                    titulo:'Mensaje:', 
+                    id:'mensaje', 
+                    name:'mensaje', 
+                    placeholder:'Escriba su mensaje aquí'}) 
+                %>
+
+                <%- include('../../admin/components/btnGuardar',{
+                    texto:'Enviar Mensaje', 
+                    type:'submit', 
+                    id:'btnEnviarMsj'}) 
+                %>
+            </div>
+        </div>
+    </form>
+</section>

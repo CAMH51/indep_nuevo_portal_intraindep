@@ -1,0 +1,92 @@
+<div class="shadow-lg p-4 bg-white  p-4 rounded-xl bg-white">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nuevo Subapartado</p>
+    <form id="formSubapartado">
+
+         <%- include('../../../components/input',{
+            titulo:'Nombre del subapartado:', 
+            type:'text', 
+            id:'subapartado', 
+            name:'subapartado', 
+            placeholder:'Nombre del subapartado'}) 
+        %>
+
+        <%- include('../../../components/textarea',{
+            titulo:'Descripción:', 
+            id:'descripcion', 
+            name:'descripcion', 
+            placeholder:'Descripción'}) 
+        %>
+
+        <%- include('../../../components/select',{
+            titulo:'Apartados:',
+            texto:'Seleccione un apartado:' ,
+            id:'fk_id_apartado', 
+            name:'fk_id_apartado',
+            opciones:apartados, 
+            opcionId:'id_apartado',
+            opcionNombre:'apartado'}) 
+        %>
+
+        <%- include('../../../components/select',{
+            titulo:'Asociar una página al Subapartado (opcional):',
+            texto:'Seleccione un página:' ,
+            id:'fk_id_pagina', 
+            name:'fk_id_pagina',
+            opciones:paginas, 
+            opcionId:'id_pagina',
+            opcionNombre:'nombre_pag'}) 
+        %>
+
+        
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Subapartado', 
+            type:'submit', 
+            id:'btnGuardarSubapartado'}) 
+        %>
+    </form>
+</div>
+
+<%- include('../../../components/scriptValidator.ejs',{}) %>
+
+<script >
+
+    const validarSubapartado =[
+        {name:'subapartado', validate:'required'},
+        {name:'fk_id_apartado', validate:'required'},
+    ];
+
+    const formSubapartado = document.getElementById('formSubapartado');
+
+    formSubapartado.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarSubapartado);
+        
+        if(valid){
+            
+            const formData = new FormData(formSubapartado);
+    
+            const response =await fetch('/subapartados',{
+                method: 'POST',
+                body: formData
+            }); 
+    
+            const data = await response.json();
+    
+            if(data.success){
+                // Si solo quieres recargar los datos actuales
+                refrescarTabla('#tablaSubapartados')
+                formSubapartado.reset();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro agregado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+
+    });
+
+</script>

@@ -1,0 +1,93 @@
+<div class="shadow-lg p-4 bg-white  p-4 rounded-xl bg-white h-[700px] overflow-hidden">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nueva Subasta</p>
+    <div class="h-[600px] overflow-x-scroll">
+        <form id="formSubasta">
+            <%- include('../../components/inputFile',{
+                formato:'JPG, PNG, GIF', 
+                id:'imgSubasta', 
+                name:'imgSubasta', 
+                titulo:'Imagen de la subasta'}); 
+            %>
+            <%- include('../../components/input',{
+                titulo:'Titulo de la Subasta:', 
+                type:'text', 
+                id:'titulo', 
+                name:'titulo', 
+                placeholder:'Título de la Subasta'}); 
+            %>
+
+            <%- include('../../components/input',{
+                titulo:'URL del En vivo:', 
+                type:'text', 
+                id:'url_envivo', 
+                name:'url_envivo', 
+                placeholder:'URL envivo'}); 
+            %>
+
+            <%- include('../../components/input',{
+                titulo:'Fecha de Inicio:', 
+                type:'date', 
+                id:'f_inicio', 
+                name:'f_inicio', 
+                placeholder:'Fecha de Inicio del envivo'}); 
+            %>
+    
+            <%- include('../../components/btnGuardar',{
+                texto:'Guardar Subasta', 
+                type:'submit', 
+                id:'btnGuardarSubasta'}); 
+            %>
+        </form>
+    </div>
+</div>
+<%- include('../../components/scriptValidator.ejs',{}) %>
+<script >
+
+    const validarSubasta=[
+        {name:'imgSubasta', validate:'file_max:5|file_type:image/png,image/jpeg,image/webp'},
+        {name:'titulo', validate:'required'},
+        {name:'f_inicio', validate:'required'}
+    ];
+
+    const formSubasta = document.getElementById('formSubasta');
+
+    formSubasta.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarSubasta);
+
+        if(valid){
+            const formData = new FormData(formSubasta);
+
+            const response =await fetch('/subastas?uploadPath=/home/subastas&fieldName=imgSubasta',{
+                method: 'POST',
+                body: formData
+            }); 
+
+            const data = await response.json();
+
+            if(response.ok){
+                refrescarTabla('#tablaSubastas')
+                    clearAllFiles();
+                    formSubasta.reset();
+                    document.querySelectorAll('.msg').forEach(el => {
+                        el.className = 'msg';
+                        el.innerHTML = '';
+                    });
+
+                    // Remover clases de error/éxito de todos los campos
+                    document.querySelectorAll('.field').forEach(el => {
+                        el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+                    });
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registro agregado con éxito",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+            }
+        }
+
+    })
+
+</script>

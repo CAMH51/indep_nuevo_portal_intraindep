@@ -1,0 +1,87 @@
+<div class="shadow-lg p-4 bg-white  p-4 rounded-xl bg-white h-[700px] overflow-hidden">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nuevo Manual</p>
+    <div class="h-[600px] overflow-x-scroll">
+        <form id="formManual">
+            <%- include('../../components/inputFile',{
+                formato:'.pdf, .doc, .xls, .docx, .xlsx, .cvs, .txt', 
+                id:'fileManual', 
+                name:'fileManual', 
+                titulo:'Archivo del manual'}) 
+            %>
+            <%- include('../../components/input',{
+                titulo:'Titulo del manual:', 
+                type:'text', 
+                id:'titulo', 
+                name:'titulo', 
+                placeholder:'Título del manual'}) 
+            %>
+
+            <%- include('../../components/select',{
+                titulo:'Sistemas:',
+                texto:'Seleccione un sistema:' ,
+                id:'sistemas', 
+                name:'sistemas',
+                opciones:sistemas, 
+                opcionId:'id_sistema',
+                opcionNombre:'nombre_sistema'}) 
+            %>
+    
+            <%- include('../../components/btnGuardar',{
+                texto:'Guardar Manual', 
+                type:'submit', 
+                id:'btnGuardarManual'}) 
+            %>
+        </form>
+    </div>
+</div>
+<%- include('../../components/scriptValidator.ejs',{}) %>
+<script >
+
+    const validarManuales=[
+        {name:'fileManual', validate:'required|file_max:15|file_type:application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, text/plain, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv '},
+        {name:'titulo', validate:'required'},
+        {name:'sistemas', validate:'required'}
+    ];
+
+    const formManual = document.getElementById('formManual');
+
+    formManual.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarManuales);
+
+        if(valid){
+            const formData = new FormData(formManual);
+
+            const response =await fetch('/manuales?uploadPath=/home/manuales&fieldName=fileManual',{
+                method: 'POST',
+                body: formData
+            }); 
+
+            const data = await response.json();
+
+            if(response.ok){
+                refrescarTabla('#tablaManuales')
+                    clearAllFiles();
+                    formManual.reset();
+                    document.querySelectorAll('.msg').forEach(el => {
+                        el.className = 'msg';
+                        el.innerHTML = '';
+                    });
+
+                    // Remover clases de error/éxito de todos los campos
+                    document.querySelectorAll('.field').forEach(el => {
+                        el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+                    });
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registro agregado con éxito",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+            }
+        }
+
+    })
+
+</script>

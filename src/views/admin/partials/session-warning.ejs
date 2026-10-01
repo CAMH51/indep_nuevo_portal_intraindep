@@ -1,0 +1,66 @@
+<!-- views/partials/session-warning.ejs -->
+<% if (locals.sessionWarning) { %>
+
+  <div id="session-banner"  class="fixed z-10 right-10 bottom-10 shadow-lg rounded-xl bg-white p-4">
+    <div class="text-center mb-7">
+      <p class="text-xl text-rojo-claro font-bold">Tu sesión expira en: </p>
+    </div>
+    <div class="text-center mb-7">
+      <strong class="border border-4 border-rojo-claro rounded-[50%] p-5"  ><span id="countdown"><%= sessionExpiresIn %></span>s</strong>
+    </div>
+    <div>
+      <button class="bg-verde-claro text-white font-bold  rounded-md p-2" onclick="renewSession()">Renovar sesión</button>
+
+      <button class="bg-gris text-white font-bold rounded-md p-2" onclick="document.getElementById('session-banner').remove()">Ignorar</button>
+      
+    </div>
+  </div>
+<!-- <div id="session-banner" style="
+  position: fixed; bottom: 1rem; right: 1rem; z-index: 9999;
+  background: #fff; border: 1px solid #e6d194; border-radius: 8px;
+  padding: 12px 16px; max-width: 800px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  font-size: 14px; color: #9b2247;
+">
+  <strong>⚠ Tu sesión expira en <span id="countdown"><%= sessionExpiresIn %></span>s</strong>
+  <br>
+  <button onclick="renewSession()" style="
+    margin-top: 8px; padding: 4px 12px; border: none; border-radius: 4px;
+    background: #611232; color: #fff; cursor: pointer; font-size: 13px;
+  ">Renovar sesión</button>
+  <button onclick="document.getElementById('session-banner').remove()" style="
+    margin-top: 8px; margin-left: 6px; padding: 4px 12px; border: 1px solid #ccc;
+    border-radius: 4px; background: #98989a; cursor: pointer; font-size: 13px;
+  ">Ignorar</button>
+</div> -->
+
+<script >
+  let secs = <%= sessionExpiresIn %>;
+  const cd = document.getElementById('countdown');
+  const tick = setInterval(() => {
+    secs--;
+    if (cd) cd.textContent = secs;
+    if (secs <= 0) {
+      clearInterval(tick);
+      // Sesión expiró mientras el usuario estaba en la página
+      alert('Tu sesión ha expirado. Serás redirigido al login.');
+      window.location.href = '/?expired=1';
+    }
+  }, 1000);
+
+  async function renewSession() {
+    try {
+      const res = await fetch('/auth/refresh', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('session-banner').remove();
+        clearInterval(tick);
+        // Opcional: mostrar toast de éxito
+      } else {
+        //window.location.href = '/';
+      }
+    } catch {
+      //window.location.href = '/';
+    }
+  }
+</script>
+<% } %>

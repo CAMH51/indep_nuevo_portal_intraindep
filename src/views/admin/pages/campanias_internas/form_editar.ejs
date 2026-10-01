@@ -1,0 +1,92 @@
+<form id="formEditarCampania">
+<%- include('../../components/inputId',{
+    titulo:'Id Campania Interna:', 
+    type:'text', 
+    id:'id_campania_interna', 
+    name:'id_campania_interna', 
+    placeholder:''}) 
+%>
+<%- include('../../components/badge',{ 
+    titulo:'Imagen Actual',
+    bg:'bg-cyan-600',
+    mensaje:'',
+    id:'badgeCampania'}) 
+%>
+<%- include('../../components/inputFileEdit',{
+    formato:'JPG, PNG, GIF', 
+    id:'imgEditCampania', 
+    name:'imgEditCampania', 
+    titulo:'Cambiar Imagen Campania Interna',
+}) 
+%>
+
+<%- include('../../components/textarea',{
+    titulo:'Descripción de la Noticia:', 
+    id:'editDescripcion', 
+    name:'editDescripcion', 
+    placeholder:'Descripción de la noticia'}) 
+%>
+
+<%- include('../../components/select',{
+    titulo:'Asociar una página a la noticia (opcional):',
+    texto:'Seleccione una página:', 
+    id:'editPagina',
+    name:'editPagina',
+    opciones:paginas, 
+    opcionId:'id_pagina',
+    opcionNombre:'nombre_pag'}) 
+%>
+<%- include('../../components/input',{
+    titulo:'URL externa (opcional):', 
+    type:'text', 
+    id:'editUrlExterna', 
+    name:'editUrlExterna', 
+    placeholder:'URL Externa'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Campania Interna', 
+    type:'submit', 
+    id:'btnEditarCampania'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditCampania=[
+            {name:'imgEditCampania', validate:'file_max:5|file_type:image/png,image/jpeg,image/webp'},
+            {name:'editDescripcion', validate:'required'},
+        ];
+
+        const formEditarCampania = document.getElementById('formEditarCampania');
+
+        formEditarCampania.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditCampania);
+            
+        if(valid){  
+            const id = document.getElementById('id_campania_interna').value;
+            const formData = new FormData(formEditarCampania);
+            const response = await fetch('/campanias_internas/'+id + '?uploadPath=/home/campanias_internas&fieldName=imgEditCampania',{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaCampania');
+                formEditarCampania.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

@@ -1,0 +1,93 @@
+<form id="formEditarComunicado">
+<%- include('../../components/inputId',{
+    titulo:'Id Comunicado:', 
+    type:'text', 
+    id:'id_comunicado', 
+    name:'id_comunicado', 
+    placeholder:''}) 
+%>
+<%- include('../../components/badge',{ 
+    titulo:'Imagen Actual',
+    bg:'bg-cyan-600',
+    mensaje:'',
+    id:'badgeComunicado'}) 
+%>
+ <%- include('../../components/inputFileEdit.ejs',{
+    formato:'JPG, PNG, GIF', 
+    id:'editImgComunicado', 
+    name:'editImgComunicado', 
+    titulo:'Imagen del comunicado'}) 
+%>
+
+<%- include('../../components/select',{
+    titulo:'Departamento Comunicado:',
+    texto:'Seleccione una Departamento:' ,
+    id:'editDepartamentoComunicado', 
+    name:'editDepartamentoComunicado',
+    opciones:departamentos, 
+    opcionId:'id_departamento_comunicado',
+    opcionNombre:'titulo'}) 
+%>
+<%- include('../../components/select',{
+    titulo:'Asociar una página al comunicado (opcional):',
+    texto:'Seleccione una página:', 
+    id:'editPagina',
+    name:'editPagina',
+    opciones:paginas, 
+    opcionId:'id_pagina',
+    opcionNombre:'nombre_pag'}) 
+%>
+<%- include('../../components/input',{
+    titulo:'URL Comunicado (opcional):', 
+    type:'text', 
+    id:'editUrlComunicado', 
+    name:'editUrlComunicado', 
+    placeholder:'URL Comunicado'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Comunicado', 
+    type:'submit', 
+    id:'btnEditarComunicado'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditComunicado=[
+        {name:'editImgComunicado', validate:'file_max:5|file_type:image/png,image/jpeg,image/webp'},
+        {name:'editDepartamentoComunicado', validate:'required'}
+    ];
+
+        const formEditarComunicado = document.getElementById('formEditarComunicado');
+
+        formEditarComunicado.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditComunicado);
+            
+        if(valid){  
+            const id = document.getElementById('id_comunicado').value;
+            const formData = new FormData(formEditarComunicado);
+            const response = await fetch('/comunicados/'+id + '?uploadPath=/home/comunicados&fieldName=editImgComunicado',{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaComunicados');
+                formEditarComunicado.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

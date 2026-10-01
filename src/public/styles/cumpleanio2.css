@@ -1,0 +1,219 @@
+header {
+      text-align: center;
+    }
+ 
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+ 
+    .f1-badge {
+      background: var(--red);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+ 
+    header h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(2.2rem, 6vw, 3.8rem);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+ 
+    header h1 span {
+      color: var(--red);
+    }
+ 
+    header p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+ 
+    /* Carousel */
+    .carousel-container {
+      width: 100%;
+      max-width: 860px;
+    }
+ 
+    .carousel-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+ 
+    .carousel-track-outer {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+ 
+    /* Fade edges */
+    .carousel-track-outer::before,
+    .carousel-track-outer::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 40px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .carousel-track-outer::before {
+      left: 0;
+      background: linear-gradient(to right, var(--bg), transparent);
+    }
+    .carousel-track-outer::after {
+      right: 0;
+      background: linear-gradient(to left, var(--bg), transparent);
+    }
+ 
+    .carousel-track {
+      display: flex;
+      gap: 10px;
+      transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+      will-change: transform;
+    }
+ 
+    .race-pill {
+      flex-shrink: 0;
+      padding: 10px 20px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--pill-bg);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+      user-select: none;
+    }
+ 
+    .race-pill:hover {
+      background: var(--pill-hover);
+      border-color: #444;
+      transform: translateY(-1px);
+    }
+ 
+    .race-pill.active {
+      background: var(--pill-active-bg);
+      border-color: var(--red-dark);
+      color: var(--pill-active-text);
+      font-weight: 600;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 0.03em;
+      font-size: 15px;
+    }
+ 
+    /* Nav Buttons */
+    .nav-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      line-height: 1;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: #222;
+      border-color: #444;
+      transform: scale(1.08);
+    }
+    .nav-btn:active:not(:disabled) { transform: scale(0.96); }
+    .nav-btn:disabled { opacity: 0.25; cursor: default; }
+ 
+    /* Progress dots */
+    .progress-bar {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+ 
+    .progress-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.3s, width 0.3s;
+    }
+    .progress-dot.active {
+      background: var(--red);
+      width: 18px;
+      border-radius: 3px;
+    }
+ 
+    /* Selected race detail */
+    .selected-detail {
+      width: 100%;
+      max-width: 860px;
+      padding: 20px 28px;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--red);
+      background: var(--surface);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+ 
+    .detail-round {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      color: var(--red);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+ 
+    .detail-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+    }
+ 
+    .detail-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+ 
+    .detail-number {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 5rem;
+      font-weight: 700;
+      color: var(--border);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+ 
+    @media (max-width: 520px) {
+      .detail-number { display: none; }
+    }

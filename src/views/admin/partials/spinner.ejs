@@ -1,0 +1,31 @@
+
+ <!-- Spinner (visible por defecto) -->
+    <div id="spinner" class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+        <div class="relative w-16 h-16">
+            <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-[#9b2247] border-r-[#611323] animate-spin"></div>
+            <div class="absolute inset-2 rounded-full border-4 border-transparent border-b-[#e6d194] border-l-[#a57f2c] animate-spin-slow"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-2 h-2 bg-white rounded-full shadow-lg shadow-blue-500/50"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estilos adicionales para la animación más lenta -->
+    <style >
+        @keyframes spin-slow {
+            to { transform: rotate(-360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 3s linear infinite;
+        }
+
+        /* Transición suave para ocultar el spinner */
+        #spinner {
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        #spinner.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+    </style>
+

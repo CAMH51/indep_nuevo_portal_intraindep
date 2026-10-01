@@ -1,0 +1,90 @@
+<form id="formEditarSubasta">
+<%- include('../../components/inputId',{
+    titulo:'Id Subasta:', 
+    type:'text', 
+    id:'id_subasta', 
+    name:'id_subasta', 
+    placeholder:''}) 
+%>
+<%- include('../../components/badge',{ 
+    titulo:'Imagen Actual',
+    bg:'bg-cyan-600',
+    mensaje:'',
+    id:'badgeSubasta'}) 
+%>
+
+<%- include('../../components/inputFileEdit',{
+    formato:'JPG, PNG, GIF', 
+    id:'editImgSubasta', 
+    name:'editImgSubasta', 
+    titulo:'Imagen de la subasta'
+}) 
+%>
+<%- include('../../components/input',{
+    titulo:'Titulo de la Subasta:', 
+    type:'text', id:'editTitulo', 
+    name:'editTitulo', 
+    placeholder:'Título de la Subasta'}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'URL del En vivo:', 
+    type:'text', 
+    id:'editUrlEnvivo', 
+    name:'editUrlEnvivo', 
+    placeholder:'URL envivo'}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Fecha de Inicio:', 
+    type:'date', 
+    id:'editFInicioEnvivo', 
+    name:'editFInicioEnvivo', 
+    placeholder:'Fecha de Inicio del envivo'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Subasta', 
+    type:'submit', 
+    id:'btnEditarSubasta'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditSubasta=[
+        {name:'editTitulo', validate:'required'},
+    ];
+
+        const formEditarSubasta = document.getElementById('formEditarSubasta');
+
+        formEditarSubasta.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditSubasta);
+            
+        if(valid){  
+            const id = document.getElementById('id_subasta').value;
+            const formData = new FormData(formEditarSubasta);
+            const response = await fetch('/subastas/'+id + '?uploadPath=/home/subastas&fieldName=editImgSubasta',{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaSubastas');
+                formEditarSubasta.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

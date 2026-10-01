@@ -1,0 +1,73 @@
+<div class="shadow-lg p-4 bg-white p-4 rounded-xl bg-white">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nuevo Departamento</p>
+    <form id="formDepartamento">
+        <%- include('../../../components/input',{
+            titulo:'Titulo del departamento:', 
+            type:'text', 
+            id:'titulo', 
+            name:'titulo', 
+            placeholder:'Título del departamento'}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Siglas del departamento:', 
+            type:'text', 
+            id:'siglas', 
+            name:'siglas', 
+            placeholder:'Siglas del departamento'}) 
+        %>
+        <div id="errorEtiqueta">
+
+        </div>
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Departamento', 
+            type:'submit', 
+            id:'btnGuardarDepartamento'}) 
+        %>
+    </form>
+</div>
+
+<%- include('../../../components/scriptValidator.ejs',{}) %>
+
+<script >
+
+    const validarDepartamento =[
+        {name:'titulo', validate:'required'},
+        {name:'siglas', validate:'required'}
+    ];
+
+    const formDepartamento = document.getElementById('formDepartamento');
+
+    formDepartamento.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarDepartamento);
+        
+        if(valid){
+            
+            const formData = new FormData(formDepartamento);
+            formData.append('fk_id_user',1);
+    
+            const response =await fetch('/departamentos',{
+                method: 'POST',
+                body: formData
+            }); 
+    
+            const data = await response.json();
+    
+            if(data.success){
+                // Si solo quieres recargar los datos actuales
+                refrescarTabla('#tablaDepartamentos')
+                formDepartamento.reset();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro agregado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+
+    });
+
+</script>

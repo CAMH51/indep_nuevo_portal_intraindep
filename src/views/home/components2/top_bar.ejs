@@ -1,0 +1,25 @@
+<div class="bg-rojo-claro text-white font-bold p-2">
+  <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span><i class="bi bi-calendar3 me-1"></i></span>
+    <div class="d-flex gap-3">
+      <a href="/" class="text-white no-underline" target="_blank"><i class="bi bi-box-arrow-in-right me-1"></i>Inicio de sesión</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const fecha_barra = document.querySelector('.bi-calendar3');
+  const fecha = new Date();
+
+  const opciones = {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  };
+
+  const fechaFormateada = fecha.toLocaleDateString('es-ES', opciones);
+
+  fecha_barra.textContent = " " + fechaFormateada;
+
+</script>

@@ -1,0 +1,54 @@
+<script type="module">
+
+  import {validatorForm,getData,obtenerId,activarImagenEdit,limpiar, showModal , visualizarImagen, obtenerIdActivarDesactivar, detectarCambios,validarPaginaUrl} from '/assets/js/funcionesHome.js';
+
+  const ventana = <%-  JSON.stringify(ventanasEmergentes) %>;
+  if(ventana.length > 0){
+    
+    let htmlVentana = `
+      <section>
+        <div class="row">`;
+      if(ventana[0].fk_id_archivo !== null) {
+        if(ventana[0].archivo.ext_archivo === 'mp4'){
+          htmlVentana += `
+            <div class="col-sm-12 col-md-12 mb-3">
+              <video width="100%" height="360" controls>
+                  <source src="${'/imagenes/home/ventanas_emergentes/'+ventana[0].archivo.nombre_archivo}" type="video/mp4">
+                  Tu navegador no soporta la etiqueta video.
+              </video>
+            </div>`;
+        }else{
+          
+          htmlVentana += `
+            <div class="col-sm-12 col-md-12 mb-3">
+              <img src="${'/imagenes/home/ventanas_emergentes/'+ventana[0].archivo.nombre_archivo}" width="100%"/>
+            </div>`;
+          }
+        }
+        if(ventana[0].descripcion !== null || ventana[0].descripcion !== ""){
+        htmlVentana += `
+          <div class="col-sm-12 col-md-12 mb-3">
+            <p>${ventana[0].descripcion}</p>
+          </div>`;
+        }
+        htmlVentana += `
+        </div>  
+      </section>
+    `;
+    function verVentanaEmergente(){
+          showModal(
+              ventana[0].titulo,
+              htmlVentana,
+              "success",
+              "lg"
+          );
+      }
+
+      verVentanaEmergente()
+  }
+
+
+
+    //ventana.length > 0 ? verVentanaEmergente() : "";
+
+</script>

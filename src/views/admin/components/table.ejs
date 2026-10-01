@@ -1,0 +1,199 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.css" />
+
+<script src="https://code.jquery.com/jquery-4.0.0.min.js" integrity="sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao=" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/2.3.7/js/dataTables.js"></script>
+
+<style>
+          /* Override de estilos nativos de DataTables para que respeten Tailwind y borde redondeado */
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+        }
+        
+        /* Estilos para inputs de búsqueda y "Mostrar X entradas" */
+        .dataTables_wrapper .dataTables_filter input,
+        .dataTables_wrapper .dataTables_length select {
+            border-radius: 0.5rem;
+            border: 1px solid #cbd5e1;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            background-color: white;
+        }
+        
+        .dataTables_wrapper .dataTables_filter input:focus,
+        .dataTables_wrapper .dataTables_length select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            ring: 2px solid #93c5fd;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        }
+        
+        /* Paginación con estilo moderno y bordes redondeados */
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.4rem 0.85rem;
+            margin: 0 0.2rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            transition: all 0.2s;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #0f172a;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: white;
+            box-shadow: 0 1px 3px rgba(37,99,235,0.3);
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background: #1d4ed8;
+            color: white;
+        }
+        
+        .dataTables_wrapper .dataTables_info {
+            font-size: 0.85rem;
+            color: #475569;
+            padding-top: 0.75rem;
+        }
+        
+        /* Ajustes para el wrapper y responsivo */
+        .dataTables_wrapper {
+            padding: 0 0.25rem;
+        }
+        
+        /* Estilos para los bordes de la tabla principal */
+        table.dataTable {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        /* Quitar el borde nativo de DataTables que podría interferir */
+        table.dataTable.no-footer {
+            border-bottom: 0;
+        }
+        
+        table.dataTable thead th, 
+        table.dataTable thead td {
+            border-bottom: none;
+        }
+        
+        /* Encabezado con color profesional (azul profundo/gris oscuro) */
+        table.dataTable thead tr {
+            background-color: #9b2247;
+        }
+        
+        table.dataTable thead th {
+            color: #f8fafc;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
+            padding: 1rem 1rem;
+            border-bottom: 1px solid #334155;
+            text-transform: uppercase;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Celdas: líneas horizontales y sutiles */
+        table.dataTable tbody td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            color: #0f172a;
+            font-weight: 400;
+            background-color: #ffffff;
+            transition: background-color 0.2s;
+        }
+        
+        /* Efecto sutil al pasar el mouse por filas */
+        table.dataTable tbody tr:hover td {
+            background-color: #f8fafc;
+        }
+        
+        /* Primera y última celda para mantener border radius consistente con tabla */
+        table.dataTable:first-child thead tr:first-child th:first-child {
+            border-top-left-radius: 1rem;
+        }
+        table.dataTable:first-child thead tr:first-child th:last-child {
+            border-top-right-radius: 1rem;
+        }
+        table.dataTable:last-child tbody tr:last-child td:first-child {
+            border-bottom-left-radius: 1rem;
+        }
+        table.dataTable:last-child tbody tr:last-child td:last-child {
+            border-bottom-right-radius: 1rem;
+        }
+        
+        /* Botones de ordenamiento (DataTables) - personalización sutil */
+        table.dataTable thead .sorting:after,
+        table.dataTable thead .sorting_asc:after,
+        table.dataTable thead .sorting_desc:after {
+            color: #94a3b8;
+            opacity: 0.7;
+        }
+        
+        /* Ajuste responsive: en móviles el wrapper tiene scroll horizontal */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 1rem;
+            background: transparent;
+        }
+        
+        /* Estilo badge para estados opcionales (ejemplo en columna estado) */
+        .badge-activo {
+            background-color: #dcfce7;
+            color: #15803d;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+        }
+        .badge-inactivo {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-pendiente {
+            background-color: #fff3cd;
+            color: #b45309;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+</style>
+
+<div class="">
+        <table class="w-[1200px] border rounded-xl " id="<%= idTable %>">
+            <thead class="bg-rojo-claro font-bold text-white">
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+</div>
+

@@ -1,0 +1,93 @@
+
+    <form id="formEditarSubapartado">
+        <%- include('../../../components/inputId',{
+            titulo:'Id Subapartado:', 
+            type:'text', 
+            id:'id_subapartado', 
+            name:'id_subapartado', 
+            placeholder:''}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Nombre del subapartado:', 
+            type:'text', 
+            id:'editSubapartado', 
+            name:'editSubapartado', 
+            placeholder:'Nombre del subapartado'}) 
+        %>
+
+        <%- include('../../../components/textarea',{
+            titulo:'Descripción:', 
+            id:'editDescripcion', 
+            name:'editDescripcion', 
+            placeholder:'Descripción'}) 
+        %>
+
+        <%- include('../../../components/select',{
+            titulo:'Apartados:',
+            texto:'Seleccione un apartado:' ,
+            id:'editFkIdApartado', 
+            name:'editFkIdApartado',
+            opciones:apartados, 
+            opcionId:'id_apartado',
+            opcionNombre:'apartado'}) 
+        %>
+
+        <%- include('../../../components/select',{
+            titulo:'Páginas:',
+            texto:'Seleccione un página:' ,
+            id:'editFkIdPagina', 
+            name:'editFkIdPagina',
+            opciones:paginas, 
+            opcionId:'id_pagina',
+            opcionNombre:'nombre_pag'}) 
+        %>
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Subapartado', 
+            type:'submit', 
+            id:'btnEditarSubapartado'}) 
+        %>
+    </form>
+
+    <script >
+
+         document.getElementById('id_subapartado').readOnly = true;
+
+        const validarEditSubapartados =[
+            {name:'editSubapartado', validate:'required|min:5'},
+            {name:'editFkIdApartado', validate:'required'},
+        ];
+
+        const formEditarSubapartado = document.getElementById('formEditarSubapartado');
+
+        formEditarSubapartado.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditSubapartados);
+            
+        if(valid){  
+            const id = document.getElementById('id_subapartado').value;
+            const formData = new FormData(formEditarSubapartado);
+            const response = await fetch('/subapartados/'+id,{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaSubapartados');
+                formEditarSubapartado.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

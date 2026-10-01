@@ -1,0 +1,87 @@
+<form id="formEditarManual">
+<%- include('../../components/inputId',{
+    titulo:'Id Manual:', 
+    type:'text', 
+    id:'id_manual_sistema', 
+    name:'id_manual_sistema', 
+    placeholder:''}) 
+%>
+<%- include('../../components/badge',{ 
+    titulo:'Archivo Actual',
+    bg:'bg-cyan-600',
+    mensaje:'',
+    id:'badgeManual'}) 
+%>
+<%- include('../../components/inputFileEdit',{
+    formato:'PDF, DOC, XLS', 
+    id:'fileEditManuales', 
+    name:'fileEditManuales', 
+    titulo:'Cambiar Archivo Manual',
+}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Titulo del manual:', 
+    type:'text', 
+    id:'editTitulo', 
+    name:'editTitulo', 
+    placeholder:'Título del manual'}) 
+%>
+
+<%- include('../../components/select',{
+    titulo:'Sistemas:',
+    texto:'Seleccione un sistema:' ,
+    id:'editSistema', 
+    name:'editSistema',
+    opciones:sistemas, 
+    opcionId:'id_sistema',
+    opcionNombre:'nombre_sistema'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Manual', 
+    type:'submit', 
+    id:'btnEditarManual'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditManual=[
+        {name:'fileEditManuales', validate:'file_max:15|file_type:image/png,image/jpeg,image/webp'},
+        {name:'editTitulo', validate:'required'},
+        {name:'editSistema', validate:'required'}
+    ];
+
+        const formEditarManual = document.getElementById('formEditarManual');
+
+        formEditarManual.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditManual);
+            
+        if(valid){  
+            const id = document.getElementById('id_manual_sistema').value;
+            const formData = new FormData(formEditarManual);
+            const response = await fetch('/manuales/'+id + '?uploadPath=/home/manuales&fieldName=fileEditManuales',{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaManuales');
+                formEditarManual.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

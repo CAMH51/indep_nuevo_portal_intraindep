@@ -1,0 +1,83 @@
+<form id="formEditarFotografia">
+<%- include('../../components/inputId',{
+    titulo:'Id Fotografía:', 
+    type:'text', 
+    id:'id_fotogaleria', 
+    name:'id_fotogaleria', 
+    placeholder:''}) 
+%>
+<%- include('../../components/badge',{ 
+    titulo:'Archivo Actual',
+    bg:'bg-cyan-600',
+    mensaje:'',
+    id:'badgeFotografia'}) 
+%>
+<%- include('../../components/inputFileEdit',{
+    formato:'JPG, PNG, GIF', 
+    id:'editImgFotografia', 
+    name:'editImgFotografia', 
+    titulo:'Cambiar Imagen de la Fotografía',
+}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Alt de la Fotografía:', 
+    type:'text', 
+    id:'editAlt', 
+    name:'editAlt', 
+    placeholder:'Alt de la Fotografía'}) 
+%>
+
+<%- include('../../components/textarea',{
+    titulo:'Descripción de la fotografía:', 
+    id:'editDescripcion', 
+    name:'editDescripcion', 
+    placeholder:'Descripción de la fotografía'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Fotografía', 
+    type:'submit', 
+    id:'btnEditarFotografia'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditFotografias=[
+            {name:'editImgFotografia', validate:'file_max:5|file_type:image/png,image/jpeg,image/webp'},
+            {name:'editAlt', validate:'required'},
+        ];
+
+        const formEditarFotografia = document.getElementById('formEditarFotografia');
+
+        formEditarFotografia.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditFotografias);
+            
+        if(valid){  
+            const id = document.getElementById('id_fotogaleria').value;
+            const formData = new FormData(formEditarFotografia);
+            const response = await fetch('/fotogalerias/'+id + '?uploadPath=/home/fotogalerias&fieldName=editImgFotografia',{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaFotografia');
+                formEditarFotografia.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

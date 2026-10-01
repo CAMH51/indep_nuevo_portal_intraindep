@@ -1,0 +1,366 @@
+
+    <form id="formEditarUsuarios">
+        <%- include('../../../components/inputId',{
+            titulo:'Id Usuario:', 
+            type:'text', 
+            id:'id_user', 
+            name:'id_user', 
+            placeholder:''}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Correo electrónico:', 
+            type:'email', 
+            id:'editEmail', 
+            name:'editEmail', 
+            placeholder:'Correo electrónico'}) 
+        %>
+
+        <%- include('../../../components/select',{
+            titulo:'Roles:',
+            texto:'Seleccione un Rol:' ,
+            id:'editFkIdRol', 
+            name:'editFkIdRol',
+            opciones: (typeof roles !== 'undefined' ? roles : (typeof rolesArray !== 'undefined' ? rolesArray : [])), 
+            opcionId:'id_rol',
+            opcionNombre:'rol'}) 
+        %>
+
+        <!-- Grid para Módulos y Apartados -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+            
+            <!-- Tarjeta Módulos -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-4 flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                        <i class="bi bi-grid-3x3-gap-fill text-indigo-600"></i> Módulos
+                    </h3>
+                    <span id="selectedModulosCount" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        0 seleccionados
+                    </span>
+                </div>
+                
+                <!-- Contenedor con scroll -->
+                <div class="max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-2 bg-gray-50 flex-1">
+                    <ul id="modulosList" class="space-y-1">
+                        <li class="text-xs text-gray-400 italic p-3 text-center">Seleccione un rol para ver los módulos</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tarjeta Apartados -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-4 flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                        <i class="bi bi-folder-fill text-amber-600"></i> Apartados
+                    </h3>
+                    <span id="selectedApartadosCount" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                        0 seleccionados
+                    </span>
+                </div>
+                
+                <!-- Contenedor con scroll -->
+                <div class="max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-2 bg-gray-50 flex-1">
+                    <ul id="categoriaList" class="space-y-1">
+                        <li class="text-xs text-gray-400 italic p-3 text-center">Cargando apartados...</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Usuario', 
+            type:'submit', 
+            id:'btnEditarUsuario'}) 
+        %>
+    </form>
+
+    <script >
+        const sessionUserId = <%= JSON.stringify(typeof user !== 'undefined' && user ? user.id_user : null) %>;
+        const sessionUserRol = <%= JSON.stringify(typeof user !== 'undefined' && user ? user.id_rol : null) %>;
+
+        document.getElementById('id_user').readOnly = true;
+
+        const validarEditUsuarios = [
+            {name:'editEmail', validate:'required|email'},
+            {name:'editFkIdRol', validate:'required'},
+        ];
+
+        const formEditarUsuarios = document.getElementById('formEditarUsuarios');
+
+        formEditarUsuarios.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditUsuarios);
+            
+            if(valid){  
+                const id = document.getElementById('id_user').value;
+                const formData = new FormData(formEditarUsuarios);
+                const response = await fetch('/users/' + id, {
+                    method: 'PUT',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if(data.success){
+                    refrescarTabla('#tablaUsuarios');
+                    formEditarUsuarios.reset();
+                    closeModal();
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registro actualizado con éxito",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                } else {
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "warning",
+                        title: data.msg || data.message || "Error al actualizar",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // LÓGICA DE APARTADOS
+        // ═══════════════════════════════════════════════════════════════════════════════
+        async function cargarApartados(userId, userRol, createdBy) {
+            const listContainer = document.getElementById('categoriaList');
+            if (!listContainer) return;
+            
+            listContainer.innerHTML = '<li class="text-xs text-gray-400 italic p-3 text-center">Cargando apartados...</li>';
+
+            try {
+                let apartadosDisponibles = [];
+                const rolActual = userRol || document.getElementById('editFkIdRol')?.value;
+                const adminCreador = createdBy || document.getElementById('id_user')?.dataset?.createdBy;
+
+                // 1. Validar el perfil del usuario para determinar los apartados que se pueden asignar:
+                // Si el usuario logueado en sesión es Administrador (rol 2), solo puede asignar los apartados que tiene asignados
+                if (sessionUserRol === 2) {
+                    const respAdminApartados = await fetch('/rel_apartado_user/user/' + sessionUserId);
+                    const dataAdmin = await respAdminApartados.json();
+                    const rels = dataAdmin.data || [];
+                    apartadosDisponibles = rels.map(r => r.apartado ? r.apartado : { id_apartado: r.fk_id_apartado, apartado: r.apartado });
+                } 
+                // Si el perfil que se edita es Editor (rol 3) y tiene un administrador creador, solo mostrar los apartados asignados a su administrador
+                else if (rolActual == 3 && adminCreador) {
+                    const respAdminApartados = await fetch('/rel_apartado_user/user/' + adminCreador);
+                    const dataAdmin = await respAdminApartados.json();
+                    const rels = dataAdmin.data || [];
+                    apartadosDisponibles = rels.map(r => r.apartado ? r.apartado : { id_apartado: r.fk_id_apartado, apartado: r.apartado });
+                } 
+                // En cualquier otro caso (Superadministrador rol 1), mostrar todos los apartados
+                else {
+                    const response = await fetch('/apartados/all', {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const data = await response.json();
+                    apartadosDisponibles = data.data || [];
+                }
+
+                // Filtrar duplicados y registros nulos
+                const seenIds = new Set();
+                apartadosDisponibles = apartadosDisponibles.filter(a => {
+                    if (!a || !a.id_apartado || seenIds.has(a.id_apartado)) return false;
+                    seenIds.add(a.id_apartado);
+                    return true;
+                });
+
+                // 2. Obtener apartados asignados al usuario que se está editando
+                let apartadosAsignados = [];
+                if (userId) {
+                    const respAsignados = await fetch('/rel_apartado_user/user/' + userId, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const dataAsignados = await respAsignados.json();
+                    apartadosAsignados = dataAsignados.data || [];
+                }
+
+                listContainer.innerHTML = '';
+
+                if (apartadosDisponibles.length === 0) {
+                    listContainer.innerHTML = '<li class="text-xs text-gray-400 italic p-3 text-center">No hay apartados asignados al administrador para mostrar</li>';
+                    updateSelectedCountApartados();
+                    return;
+                }
+
+                apartadosDisponibles.forEach((apartado) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center space-x-2.5 p-2 rounded-lg hover:bg-white hover:shadow-xs transition-all border border-transparent hover:border-gray-200';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'apartados[]';
+                    checkbox.id = `edit_apartado_${apartado.id_apartado}`;
+                    checkbox.value = apartado.id_apartado;
+                    checkbox.className = 'w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500 cursor-pointer';
+
+                    // Verificar si el apartado está asignado al usuario
+                    const isChecked = apartadosAsignados.some(rel => 
+                        rel.fk_id_apartado == apartado.id_apartado ||
+                        rel.id_apartado == apartado.id_apartado ||
+                        (rel.apartado && rel.apartado.id_apartado == apartado.id_apartado)
+                    );
+
+                    if (isChecked) {
+                        checkbox.checked = true;
+                    }
+
+                    const label = document.createElement('label');
+                    label.htmlFor = `edit_apartado_${apartado.id_apartado}`;
+                    label.className = 'text-xs font-medium text-gray-700 cursor-pointer select-none flex-1';
+                    label.textContent = apartado.apartado || ('Apartado ' + apartado.id_apartado);
+
+                    checkbox.addEventListener('change', updateSelectedCountApartados);
+
+                    li.appendChild(checkbox);
+                    li.appendChild(label);
+                    listContainer.appendChild(li);
+                });
+
+                updateSelectedCountApartados();
+            } catch (error) {
+                console.error('Error al cargar apartados:', error);
+                listContainer.innerHTML = '<li class="text-xs text-red-500 italic p-3 text-center">Error al cargar apartados</li>';
+            }
+        }
+
+        function updateSelectedCountApartados() {
+            const listContainer = document.getElementById('categoriaList');
+            const selectedCountSpan = document.getElementById('selectedApartadosCount');
+            if (!listContainer || !selectedCountSpan) return;
+
+            const checkboxes = listContainer.querySelectorAll('input[type="checkbox"]');
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            selectedCountSpan.textContent = `${checkedCount} seleccionada${checkedCount !== 1 ? 's' : ''}`;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // LÓGICA DE MÓDULOS
+        // ═══════════════════════════════════════════════════════════════════════════════
+        async function cargarModulos(userId, rolId) {
+            const listContainer = document.getElementById('modulosList');
+            if (!listContainer) return;
+
+            if (!rolId) {
+                listContainer.innerHTML = '<li class="text-xs text-gray-400 italic p-3 text-center">Seleccione un rol para ver los módulos</li>';
+                updateSelectedCountModulos();
+                return;
+            }
+
+            listContainer.innerHTML = '<li class="text-xs text-gray-400 italic p-3 text-center">Cargando módulos...</li>';
+
+            try {
+                // 1. Obtener módulos asociados al rol
+                const response = await fetch('/modulos/rol/' + rolId, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                const modulosRol = data.data || [];
+
+                // 2. Obtener módulos asignados al usuario si se pasó userId
+                let modulosAsignados = [];
+                if (userId) {
+                    const respAsignados = await fetch('/modulos/user/' + userId, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const dataAsignados = await respAsignados.json();
+                    modulosAsignados = dataAsignados.data || [];
+                }
+
+                listContainer.innerHTML = '';
+
+                if (modulosRol.length === 0) {
+                    listContainer.innerHTML = '<li class="text-xs text-gray-400 italic p-3 text-center">No hay módulos disponibles para este rol</li>';
+                    updateSelectedCountModulos();
+                    return;
+                }
+
+                modulosRol.forEach((item) => {
+                    const modulo = item.modulo ? item.modulo : item;
+                    if (!modulo || !modulo.id_modulo) return;
+
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center space-x-2.5 p-2 rounded-lg hover:bg-white hover:shadow-xs transition-all border border-transparent hover:border-gray-200';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'modulos[]';
+                    checkbox.id = `edit_modulo_${modulo.id_modulo}`;
+                    checkbox.value = modulo.id_modulo;
+                    checkbox.className = 'w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer';
+
+                    // Verificar si el módulo está asignado al usuario
+                    const isChecked = modulosAsignados.some(rel => 
+                        rel.fk_id_modulo == modulo.id_modulo ||
+                        rel.id_modulo == modulo.id_modulo ||
+                        (rel.modulo && rel.modulo.id_modulo == modulo.id_modulo)
+                    );
+
+                    if (isChecked) {
+                        checkbox.checked = true;
+                    }
+
+                    const label = document.createElement('label');
+                    label.htmlFor = `edit_modulo_${modulo.id_modulo}`;
+                    label.className = 'text-xs font-medium text-gray-700 cursor-pointer select-none flex-1';
+                    label.textContent = modulo.modulo || modulo.nombre || `Módulo ${modulo.id_modulo}`;
+
+                    checkbox.addEventListener('change', updateSelectedCountModulos);
+
+                    li.appendChild(checkbox);
+                    li.appendChild(label);
+                    listContainer.appendChild(li);
+                });
+
+                updateSelectedCountModulos();
+            } catch (error) {
+                console.error('Error al cargar módulos:', error);
+                listContainer.innerHTML = '<li class="text-xs text-red-500 italic p-3 text-center">Error al cargar módulos</li>';
+            }
+        }
+
+        function updateSelectedCountModulos() {
+            const listContainer = document.getElementById('modulosList');
+            const selectedCountSpan = document.getElementById('selectedModulosCount');
+            if (!listContainer || !selectedCountSpan) return;
+
+            const checkboxes = listContainer.querySelectorAll('input[type="checkbox"]');
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            selectedCountSpan.textContent = `${checkedCount} seleccionado${checkedCount !== 1 ? 's' : ''}`;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // EVENTOS Y EXPOSICIÓN GLOBAL
+        // ═══════════════════════════════════════════════════════════════════════════════
+        document.getElementById('editFkIdRol').addEventListener('change', (e) => {
+            const userId = document.getElementById('id_user').value;
+            const newRolId = e.target.value;
+            const createdBy = document.getElementById('id_user').dataset.createdBy;
+            cargarModulos(userId, newRolId);
+            cargarApartados(userId, newRolId, createdBy);
+        });
+
+        async function cargarApartadosYModulos(userId, rolId, createdBy) {
+            if (createdBy) {
+                document.getElementById('id_user').dataset.createdBy = createdBy;
+            }
+            await Promise.all([
+                cargarApartados(userId, rolId, createdBy),
+                cargarModulos(userId, rolId)
+            ]);
+        }
+
+        window.cargarApartadosYModulos = cargarApartadosYModulos;
+        window.cargarApartados = cargarApartados;
+        window.cargarModulos = cargarModulos;
+    </script>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal IntraINDEP</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/output.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+
+
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 antialiased min-h-screen">
+    
+    <!-- Header Fijo (Sticky) que contiene el Logo Centrado y el Menú de Navegación -->
+    <header class="sticky top-0 z-50 bg-gray-50/95 backdrop-blur-md pt-2 pb-2">
+        <div class="max-w-7xl mx-auto px-3">
+            <div class="flex justify-center mb-2">
+                <img class="w-[300px] md:w-[400px] transition-all" src="/img/logo_intraindep.png" alt="Logo IntraINDEP">
+            </div>
+            <div>
+                <%- include('./components_flowbite/menu.ejs') %>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal Responsivo -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        
+        <%if(isHome){%>
+        <!-- Sección Principal: Campaña + Noticias (Columna izquierda) y Subastas + Ligas (Columna derecha) -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">  
+            <div class="col-span-1 lg:col-span-3 space-y-6">
+                <!-- Campaña Interna -->
+                <div>
+                    <%- include('./components_flowbite/titulo.ejs',{titulo:'Campaña Interna'}) %>
+                    <div class="mt-3">
+                        <%- include('./components_flowbite/carrousel.ejs') %>
+                    </div>
+                </div>
+                <!-- Noticias -->
+                <div>
+                    <%- include('./components_flowbite/titulo.ejs',{titulo:'Noticias'}) %>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3 mb-4">
+                        <%- include('./components_flowbite/noticias.ejs') %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna lateral: Subastas y Ligas de Interés -->
+            <div class="col-span-1 lg:col-span-1 space-y-6">
+                <div>
+                    <span>
+                        <i class="bi bi-calendar3 me-1 font-bold"></i></span>
+                </div>
+                <div>
+                    <%- include('./components_flowbite/titulo.ejs',{titulo:'Subastas INDEP'}) %>
+                    <div class="mt-3">
+                        <%- include('./components_flowbite/subastas.ejs') %>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                    <%- include('./components_flowbite/titulo.ejs',{titulo:'Enlaces de Interés'}) %>
+                    <div class="mt-3">
+                        <%- include('./components_flowbite/ligasInteres.ejs') %>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <p class="text-md font-semibold">Versión 1.0.0</p>
+                </div>
+            </div>
+        
+        </div>
+            
+
+        <!-- Servicios y Promociones -->
+        <div class="bg-[#98989a]/10 rounded-2xl p-4 sm:p-6 border border-gray-200">
+            <%- include('./components_flowbite/titulo.ejs',{titulo:'Servicios y Promociones'}) %>
+            <div class="grid grid-cols-1 gap-4 mt-4">
+                <%- include('./components_flowbite/servicios_promociones.ejs') %>
+            </div>
+        </div>
+
+        <!-- Cumpleaños de la semana -->
+        <div class="p-4 sm:p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+            <%- include('./components_flowbite/titulo.ejs',{titulo:'Cumpleaños de la semana'}) %>
+            <div class="grid grid-cols-1 gap-4 mt-4">
+                <%- include('./components_flowbite/cumpleanios.ejs') %>
+            </div>
+        </div>
+
+        <!-- Comunicados -->
+        <div class="p-4 sm:p-6 bg-white rounded-2xl shadow-sm border border-gray-100" id="comunicados">
+            <%- include('./components_flowbite/titulo.ejs',{titulo:'Comunicados'}) %>
+            <div class="grid grid-cols-1 gap-4 mt-4">
+                <%- include('./components_flowbite/comunicados.ejs') %>
+            </div>
+        </div>
+
+        <!-- Sistemas -->
+        <div class="p-4 sm:p-6" id="sistemas">
+            <%- include('./components_flowbite/titulo.ejs',{titulo:'Sistemas'}) %>
+            <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6 mt-4">
+                <%- include('./components_flowbite/sistemas.ejs') %>
+            </div>
+        </div>
+
+        <!-- Mesa de Ayuda -->
+        <div class="p-4 sm:p-6 bg-white rounded-2xl shadow-sm border border-gray-100" id="mesa_ayuda">
+            <div class="grid grid-cols-1 gap-4 mt-4">
+                <div>
+                    <%- include('./components_flowbite/titulo.ejs',{titulo:'Mesa de Ayuda'}) %>
+                    <a href="https://mesadeayuda.indep.gob.mx/" target="_blank">
+                        <%- include('./components_flowbite/mesa_ayuda.ejs') %>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <%- include('./components2/ventana_emergente.ejs') %>
+        <%}else{%>
+        <div class="col-sm-12 col-md-12 ">
+
+            <nav class="flex mt-4" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                    <li class="inline-flex items-center">
+                    <a href="/" class="inline-flex items-center text-sm font-medium text-body">
+                        <svg class="w-4 h-4 me-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"/></svg>
+                        Inicio
+                    </a>
+                    </li>
+                    <li>
+                    <% if(apartado) { %>
+                    <div class="flex items-center space-x-1.5">
+                        <svg class="w-3.5 h-3.5 rtl:rotate-180 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"/></svg>
+                        <span class="inline-flex items-center text-sm font-medium text-body-subtle"><%= apartado %></span>
+                    </div>
+                    <% } %>
+                    </li>
+                    <li aria-current="page">
+                    <% if(slug) { %>
+                    <div class="flex items-center space-x-1.5">
+                        <svg class="w-3.5 h-3.5 rtl:rotate-180 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"/></svg>
+                        <span class="inline-flex items-center text-sm font-medium text-body-subtle"><%= slug %></span>
+                    </div>
+                    <% } %>
+                    </li>
+                </ol>
+            </nav>
+            <% if (typeof pageHtml !== 'undefined') { %>
+                <%- pageHtml %>
+            <% } else { %>
+                <% try { %>
+                    <%- include('../' + page) %>
+                <% } catch(e) { %>
+                    <%- include('./404.ejs') %>
+                <% } %>
+            <% } %>
+        </div>
+        <%}%>
+
+        <!-- Pie de página -->
+        <div>
+            <%- include('./components_flowbite/footer.ejs') %>
+        </div>
+    </div>
+
+    <!-- Botón Circular Flotante (Volver arriba) -->
+    <%- include('./components_flowbite/btn_circular.ejs') %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const fecha_barra = document.querySelector('.bi-calendar3');
+    if (fecha_barra) {
+      const fecha = new Date();
+      const opciones = {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      };
+      const fechaFormateada = fecha.toLocaleDateString('es-ES', opciones);
+      fecha_barra.textContent = " " + fechaFormateada;
+    }
+
+    if (typeof initCarousels === 'function') {
+      initCarousels();
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<form id="formEditarDocumento">
+<%- include('../../components/inputId',{
+    titulo:'Id Documento:', 
+    type:'text', 
+    id:'id_documento', 
+    name:'id_documento', 
+    placeholder:''}) 
+%>
+<%- include('../../components/badge',{ 
+    titulo:'Archivo Actual',
+    bg:'bg-cyan-600',
+    mensaje:'',
+    id:'badgeDocumento'}) 
+%>
+<%- include('../../components/inputFileEdit',{
+    formato:'.pdf, .docx, .xlsx, .pptx, .zip, .rar, .txt', 
+    id:'archivoEditDocumento', 
+    name:'archivoEditDocumento', 
+    titulo:'Cambiar Archivo Documento',
+}) 
+%>
+<%- include('../../components/input',{
+    titulo:'Titulo del documento:', 
+    type:'text', 
+    id:'editTitulo', 
+    name:'editTitulo', 
+    placeholder:'Título del documento'}) 
+%>
+<%- include('../../components/textarea',{
+    titulo:'Descripción del documento:', 
+    id:'editDescripcion', 
+    name:'editDescripcion', 
+    placeholder:'Descripción del documento'}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Fecha de autorización:', 
+    type:'date', 
+    id:'editFAutorizacion', 
+    name:'editFAutorizacion', 
+    placeholder:'Fecha de autorización'}) 
+%>
+
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Documento', 
+    type:'submit', 
+    id:'btnEditarDocumento'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditDocumento=[
+        {name:'archivoEditDocumento', validate:'file_max:30'},
+        {name:'editTitulo', validate:'required'},
+        {name:'editDescripcion', validate:'required'}
+    ];
+
+        const formEditarDocumento = document.getElementById('formEditarDocumento');
+
+        formEditarDocumento.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditDocumento);
+            
+        if(valid){  
+            const id = document.getElementById('id_documento').value;
+            const formData = new FormData(formEditarDocumento);
+            const response = await fetch('/documentos/'+id + '?uploadPath=/home/documentos&fieldName=archivoEditDocumento',{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaDocumentos');
+                formEditarDocumento.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

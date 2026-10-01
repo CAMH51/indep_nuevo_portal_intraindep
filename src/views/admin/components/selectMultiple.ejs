@@ -1,0 +1,215 @@
+<div class="max-w-md mx-auto bg-white">
+        <label class="text-1xl font-bold text-amarillo-oscuro p-2" for=""><%=titulo%></label>
+        
+        <!-- Select múltiple nativo (oculto) -->
+        <select id="selectOpciones" multiple class="hidden" data-data="[]">
+   
+        </select>
+
+        <!-- Contenedor de etiquetas seleccionadas -->
+        <div class="border border-gray-300 rounded-lg p-2 min-h-[100px] focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 transition-all">
+            <div id="tagsContainer" class="flex flex-wrap gap-2 mb-2">
+                <!-- Las etiquetas se agregarán aquí dinámicamente -->
+            </div>
+            
+            <!-- Input para filtrar/buscar -->
+            <input type="text" 
+                   id="searchInput"
+                   placeholder="Buscar o escribir nueva opción..."
+                   class="w-full outline-none p-1 text-gray-700">
+        </div>
+
+        <!-- Dropdown de opciones disponibles -->
+        <div id="dropdown" class="hidden mt-1 border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
+            <div id="opcionesDisponibles" class="py-1">
+                <!-- Las opciones disponibles se llenarán dinámicamente -->
+            </div>
+            <button id="agregarPersonalizado" class="hidden w-full text-left px-4 py-2 text-blue-600 hover:bg-gray-100 border-t">
+                + Agregar "?"
+            </button>
+        </div>
+</div>
+
+ <script >
+     const selectNativo = document.getElementById('selectOpciones');
+     const data = selectNativo.dataset.data;
+        // Datos
+        let opcionId = '<%=opcionId%>';
+        let opcionNombre = '<%=opcionNombre%>';
+        let opcionesDisponibles = data;
+        let opcionesSeleccionadas = [];
+        
+        console.log("datos",data)
+        // Elementos DOM
+        const tagsContainer = document.getElementById('tagsContainer');
+        const searchInput = document.getElementById('searchInput');
+        const dropdown = document.getElementById('dropdown');
+        const opcionesDisponiblesDiv = document.getElementById('opcionesDisponibles');
+        const agregarPersonalizadoBtn = document.getElementById('agregarPersonalizado');
+        
+
+
+
+
+        // Actualizar el select nativo (para envío de formularios)
+        function actualizarSelectNativo() {
+            // Limpiar select nativo
+            selectNativo.innerHTML = '';
+            // Agregar opciones seleccionadas como options
+            opcionesSeleccionadas.forEach(valor => {
+                const option = document.createElement('option');
+                option.value = valor[opcionId];
+                option.textContent = valor[opcionNombre];
+                option.selected = true;
+                selectNativo.appendChild(option);
+            });
+        }
+
+        // Renderizar etiquetas seleccionadas
+        function renderizarTags() {
+            tagsContainer.innerHTML = '';
+            opcionesSeleccionadas.forEach(opcion => {
+                const tag = document.createElement('div');
+                tag.className = 'inline-flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm';
+                tag.innerHTML = `
+                    <span>${opcion}</span>
+                    <button type="button" data-valor="${opcion}" class="remover-tag ml-1 text-blue-600 hover:text-blue-800 focus:outline-none">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                `;
+                tagsContainer.appendChild(tag);
+            });
+
+            // Agregar event listeners a los botones de remover
+            document.querySelectorAll('.remover-tag').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const valor = btn.getAttribute('data-valor');
+                    removerOpcion(valor);
+                });
+            });
+            
+            actualizarSelectNativo();
+        }
+
+        // Renderizar dropdown de opciones disponibles
+        function renderizarDropdown(filtro = '') {
+            const filtroLower = filtro.toLowerCase().trim();
+            let opcionesFiltradas = opcionesDisponibles.filter(op => 
+                !opcionesSeleccionadas.includes(op) && 
+                op.toLowerCase().includes(filtroLower)
+            );
+            
+            // Mostrar opción para agregar nuevo si no existe
+            const existeOpcion = opcionesDisponibles.some(op => op.toLowerCase() === filtroLower);
+            const mostrarAgregar = filtro.trim() !== '' && !existeOpcion && !opcionesSeleccionadas.some(op => op.toLowerCase() === filtroLower);
+            
+            if (mostrarAgregar) {
+                agregarPersonalizadoBtn.classList.remove('hidden');
+                agregarPersonalizadoBtn.querySelector('span').innerHTML = `+ Agregar "${filtro}"`;
+            } else {
+                agregarPersonalizadoBtn.classList.add('hidden');
+            }
+            
+            if (opcionesFiltradas.length === 0 && !mostrarAgregar) {
+                opcionesDisponiblesDiv.innerHTML = '<div class="px-4 py-2 text-gray-500 text-center">No hay opciones disponibles</div>';
+                return;
+            }
+            
+            opcionesDisponiblesDiv.innerHTML = '';
+            opcionesFiltradas.forEach(opcion => {
+                const div = document.createElement('div');
+                div.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors';
+                div.textContent = opcion;
+                div.addEventListener('click', () => agregarOpcion(opcion));
+                opcionesDisponiblesDiv.appendChild(div);
+            });
+        }
+
+        // Agregar opción seleccionada
+        function agregarOpcion(opcion) {
+            if (!opcionesSeleccionadas.includes(opcion)) {
+                opcionesSeleccionadas.push(opcion);
+                renderizarTags();
+                searchInput.value = '';
+                renderizarDropdown('');
+                ocultarDropdown();
+            }
+        }
+
+        // Remover opción seleccionada
+        function removerOpcion(opcion) {
+            const index = opcionesSeleccionadas.indexOf(opcion);
+            if (index !== -1) {
+                opcionesSeleccionadas.splice(index, 1);
+                renderizarTags();
+                renderizarDropdown(searchInput.value);
+                // Si hay texto en el input, mostrar dropdown nuevamente
+                if (searchInput.value.trim() !== '') {
+                    mostrarDropdown();
+                }
+            }
+        }
+
+        // Agregar opción personalizada
+        function agregarOpcionPersonalizada(valor) {
+            const nuevoValor = valor.trim();
+            if (nuevoValor && !opcionesDisponibles.includes(nuevoValor) && !opcionesSeleccionadas.includes(nuevoValor)) {
+                opcionesDisponibles.push(nuevoValor);
+                agregarOpcion(nuevoValor);
+                renderizarDropdown('');
+            }
+        }
+
+        // Mostrar/ocultar dropdown
+        function mostrarDropdown() {
+            dropdown.classList.remove('hidden');
+        }
+        
+        function ocultarDropdown() {
+            dropdown.classList.add('hidden');
+        }
+
+        // Event Listeners
+        searchInput.addEventListener('focus', () => {
+            renderizarDropdown(searchInput.value);
+            mostrarDropdown();
+        });
+        
+        searchInput.addEventListener('input', (e) => {
+            renderizarDropdown(e.target.value);
+            mostrarDropdown();
+        });
+        
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target) && e.target !== searchInput && !tagsContainer.contains(e.target)) {
+                ocultarDropdown();
+            }
+        });
+        
+        agregarPersonalizadoBtn.addEventListener('click', () => {
+            if (searchInput.value.trim()) {
+                agregarOpcionPersonalizada(searchInput.value);
+                searchInput.value = '';
+                renderizarDropdown('');
+                ocultarDropdown();
+            }
+        });
+        
+        // Renderizado inicial
+        renderizarTags();
+        renderizarDropdown('');
+        
+        // Prevenir envío de formulario al presionar Enter en el input
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && searchInput.value.trim()) {
+                e.preventDefault();
+                agregarOpcionPersonalizada(searchInput.value);
+                searchInput.value = '';
+                renderizarDropdown('');
+                ocultarDropdown();
+            }
+        });
+    </script>

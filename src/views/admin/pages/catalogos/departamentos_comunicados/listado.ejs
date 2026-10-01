@@ -1,0 +1,83 @@
+<div class="shadow-lg p-4 bg-white p-4 rounded-xl bg-white">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-list-task"></i> Listado de Departamentos</p>
+    <div class="basis-2/3 mb:basis-2/3">
+        <%- include('../../../components/table',{idTable:'tablaDepartamentos'}) %>
+        <%- include('../../../components/scriptDataTable') %>
+    </div>
+
+</div>
+
+<%- include('../../../components/modal',{idModal:"modalDepartamento", titulo:"Editar Departamento",body:'../pages/catalogos/departamentos_comunicados/form_editar.ejs'}) %>
+<script >
+
+    const columnasTableDepartamentos=[
+        {title:'Id',data:'id_departamento_comunicado'},
+        {title:'Titulo',data:'titulo'},
+        {title:'Siglas',data:'siglas'},
+        {title:'Estatus',data:'activo',
+            render:function(data,type,row,meta){
+                if(data){
+                    return `
+                        <span class="inline-flex items-center rounded-md bg-green-600 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-700/10">
+                            Activo
+                        </span>
+                    `;
+                }else{
+                    return `
+                        <span class="inline-flex items-center rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-red-700/10">
+                            Inactivo
+                        </span>
+                    `;
+                }
+            }
+        },
+        {title:'Fecha de registro',data:'f_registro', className: "whitespace-nowrap"},
+        {title:'Última actualización',data:'f_modificacion', className: "whitespace-nowrap"},
+        {title:'Acciones',data:null,
+            render:function(data,type,row,meta){
+                if(row.activo){
+                    return `
+                        <a title="Editar" onclick="openModal(${row.id_departamento_comunicado},obtenerDepartamento)" class="text-xl text-indigo-600 hover:text-indigo-900 mr-3"><i class="bi bi-pencil-square"></i></a>
+                        <a onclick="activarDepartamento(${row.id_departamento_comunicado},'false')" title="Desactivar Departamento" class="text-xl text-red-500 hover:text-red-700"><i class="bi bi-x-circle"></i></a>
+                    `;
+                }else{
+                    return `
+                        <a  title="Editar" onclick="openModal(${row.id_departamento_comunicado},obtenerEtiqueta)" class="text-xl text-indigo-600 hover:text-indigo-900 mr-3"><i class="bi bi-pencil-square"></i></a>
+                        <a onclick="activarDepartamento(${row.id_departamento_comunicado},'true')" title="Activar Departamento" class="text-xl text-green-500 hover:text-green-700"><i class="bi bi-check-circle"></i></a>
+                    `;
+                }
+            }
+        },
+
+    ];
+
+    verTabla(columnasTableDepartamentos,{},'#tablaDepartamentos','/departamentos/all');
+
+    async function  obtenerDepartamento(id){
+        const response = await fetch(`/departamentos/${id}`);
+        const data = await response.json();
+        if(data.success){
+            document.getElementById('id_departamento_comunicado').value = data.data.id_departamento_comunicado;
+            document.getElementById('editTitulo').value = data.data.titulo;
+            document.getElementById('editSiglas').value = data.data.siglas;
+        }
+    }
+
+    async function activarDepartamento(id,status){
+        const formData = new FormData();
+        formData.append('status',status);
+        const response = await fetch(`/departamentos/activar/${id}`,{
+            method: 'PUT',
+            body:formData
+        });
+        const data = await response.json();
+        console.log(data);
+
+        refrescarTabla('#tablaDepartamentos')
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+
+    
+
+</script>

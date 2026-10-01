@@ -1,0 +1,104 @@
+<form id="formEditarAviso">
+<%- include('../../components/inputId',{
+    titulo:'Id Aviso Importante:', 
+    type:'text', 
+    id:'id_aviso', 
+    name:'id_aviso', 
+    placeholder:''}) 
+%>
+<%- include('../../components/input',{
+    titulo:'Título:', 
+    type:'text', 
+    id:'editTitulo', 
+    name:'editTitulo', 
+    placeholder:'Agregue un título'}) 
+%>
+
+<%- include('../../components/textarea',{
+    titulo:'Descripción del aviso :', 
+    id:'editDescripcion', 
+    name:'editDescripcion', 
+    placeholder:'Descripción del aviso'}) 
+%>
+
+<%- include('../../components/select',{
+    titulo:'Asociar una página aa Aviso (opcional):',
+    texto:'Seleccione una página:', 
+    id:'editPagina',
+    name:'editPagina',
+    opciones:paginas, 
+    opcionId:'id_pagina',
+    opcionNombre:'nombre_pag'}) 
+%>
+<%- include('../../components/input',{
+    titulo:'URL externa (opcional):', 
+    type:'text', 
+    id:'editUrlPagina', 
+    name:'editUrlPagina', 
+    placeholder:'URL Externa'}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Fecha de Inicio:', 
+    type:'date', 
+    id:'editFInicio', 
+    name:'editFInicio', 
+    placeholder:'Fecha de Inicio'}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Fecha de Termino:', 
+    type:'date', 
+    id:'editFTermino', 
+    name:'editFTermino', 
+    placeholder:'Fecha de Termino'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Aviso Importante', 
+    type:'submit', 
+    id:'btnGuardarAviso'}) 
+%>
+</form>
+
+<script  >
+
+        const validarEditAvisos=[
+            {name:'edittTitulo', validate:'required'},
+            {name:'editDescripcion', validate:'required'},
+            {name:'editFInicio', validate:'required'},
+            {name:'editFTermino', validate:'required'},
+        ];
+
+        const formEditarAviso = document.getElementById('formEditarAviso');
+
+        formEditarAviso.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditAvisos);
+            
+        if(valid){  
+            const id = document.getElementById('id_aviso').value;
+            const formData = new FormData(formEditarAviso);
+            const response = await fetch('/avisos_importantes/'+id ,{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaAvisos');
+                formEditarAviso.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

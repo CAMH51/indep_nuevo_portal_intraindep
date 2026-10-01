@@ -1,0 +1,96 @@
+
+    <form id="formEditarModulo">
+        <%- include('../../../components/inputId',{
+            titulo:'Id Módulo:', 
+            type:'text', 
+            id:'id_modulo', 
+            name:'id_modulo', 
+            placeholder:''}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Módulo:', 
+            type:'text', 
+            id:'editModulo', 
+            name:'editModulo', 
+            placeholder:'Módulo'}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Nombre del módulo:', 
+            type:'text', 
+            id:'editNombre', 
+            name:'editNombre', 
+            placeholder:'Nombre del módulo'}) 
+        %>
+
+        <%- include('../../../components/textarea',{
+            titulo:'Descripción:', 
+            id:'editDescripcion', 
+            name:'editDescripcion', 
+            placeholder:'Descripción'}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Ruta del módulo:', 
+            type:'text', 
+            id:'editRuta', 
+            name:'editRuta', 
+            placeholder:'Ruta del módulo'}) 
+        %>
+
+        <%- include('../../../components/ckeck',{
+            titulo:'Catálogo:', 
+            id:'editIscatalog', 
+            name:'editIscatalog' }) 
+        %>
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Módulo', 
+            type:'submit', 
+            id:'btnEditarModulo'}) 
+        %>
+    </form>
+
+    <script >
+
+         document.getElementById('id_modulo').readOnly = true;
+
+        const validarEditModulos =[
+        {name:'editModulo', validate:'required|min:5'},
+        {name:'editNombre', validate:'required|min:5'},
+        {name:'editRuta', validate:'required'}
+    ];
+
+        const formEditarModulo = document.getElementById('formEditarModulo');
+
+        formEditarModulo.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditModulos);
+            
+        if(valid){  
+            const id = document.getElementById('id_modulo').value;
+            const formData = new FormData(formEditarModulo);
+            const response = await fetch('/modulos/'+id,{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaModulos');
+                formEditarModulo.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

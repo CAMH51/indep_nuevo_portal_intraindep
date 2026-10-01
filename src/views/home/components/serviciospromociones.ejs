@@ -1,0 +1,17 @@
+ <section id="servicios">
+    <div class="flex justify-between items-center mb-5"><h2 class="text-2xl font-bold border-l-4 border-blue-600 pl-3">Servicios y Promociones</h2><div class="flex gap-2"><div class="swiper-servicios-button-prev cursor-pointer bg-gray-200 p-2 rounded-full"><i class="fas fa-chevron-left"></i></div><div class="swiper-servicios-button-next cursor-pointer bg-gray-200 p-2 rounded-full"><i class="fas fa-chevron-right"></i></div></div></div>
+    <div class="swiper serviciosSwiper">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide"><div class="bg-white rounded-2xl shadow-md overflow-hidden"><img src="https://picsum.photos/id/1/400/220" class="w-full h-44 object-cover"><div class="p-4"><span class="text-blue-500 text-xs font-semibold">Tecnología</span><h3 class="font-bold text-lg">IA Generativa</h3><p class="text-gray-600 text-sm">Avances en chatbots y creatividad.</p></div></div></div>
+            <div class="swiper-slide"><div class="bg-white rounded-2xl shadow-md overflow-hidden"><img src="https://picsum.photos/id/26/400/220" class="w-full h-44 object-cover"><div class="p-4"><span class="text-green-500 text-xs">Medio ambiente</span><h3 class="font-bold text-lg">Cumbre Climática</h3><p class="text-gray-600 text-sm">Compromisos por el planeta.</p></div></div></div>
+            <div class="swiper-slide"><div class="bg-white rounded-2xl shadow-md overflow-hidden"><img src="https://picsum.photos/id/91/400/220" class="w-full h-44 object-cover"><div class="p-4"><span class="text-purple-500 text-xs">Negocios</span><h3 class="font-bold text-lg">Startups Latinas</h3><p class="text-gray-600 text-sm">Innovación regional en auge.</p></div></div></div>
+            <div class="swiper-slide"><div class="bg-white rounded-2xl shadow-md overflow-hidden"><img src="https://picsum.photos/id/155/400/220" class="w-full h-44 object-cover"><div class="p-4"><span class="text-red-500 text-xs">Deportes</span><h3 class="font-bold text-lg">Juegos Olímpicos</h3><p class="text-gray-600 text-sm">Entusiasmo por París 2024.</p></div></div></div>
+        </div>
+        <div class="swiper-pagination-servicios mt-3"></div>
+    </div>
+</section>
+
+
+<script>
+    const serviciosSwiper = new Swiper('.serviciosSwiper', { slidesPerView: 1, spaceBetween: 20, loop: true, autoplay: { delay: 5000 }, pagination: { el: '.swiper-pagination-servicios', clickable: true }, navigation: { nextEl: '.swiper-servicios-button-next', prevEl: '.swiper-servicios-button-prev' }, breakpoints: { 640: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } } });
+</script>

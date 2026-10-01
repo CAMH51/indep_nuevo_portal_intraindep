@@ -1,0 +1,101 @@
+<form id="formEditarVentana">
+<%- include('../../components/inputId',{
+    titulo:'Id Ventana Emergente:', 
+    type:'text', 
+    id:'id_ventana_emergente', 
+    name:'id_ventana_emergente', 
+    placeholder:''}) 
+%>
+<%- include('../../components/badge',{ 
+    titulo:'Archivo Actual',
+    bg:'bg-cyan-600',
+    mensaje:'',
+    id:'badgeVentana'}) 
+%>
+<%- include('../../components/inputFileEdit',{
+    formato:'image/png,image/jpeg,image/webp', 
+    id:'editArchivoVentana', 
+    name:'editArchivoVentana', 
+    titulo:'Cambiar Archivo Ventana Emergente',
+}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Titulo de la Ventana Emergente:', 
+    type:'text', 
+    id:'editTitulo', 
+    name:'editTitulo', 
+    placeholder:'Titulo de la Ventana Emergente'}) 
+%>
+
+<%- include('../../components/textarea',{
+    titulo:'Descripción de la ventana emergente:', 
+    id:'editDescripcion', 
+    name:'editDescripcion', 
+    placeholder:'Descripción de la ventana emergente'}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Fecha de Inicio:', 
+    type:'date', 
+    id:'editFInicio', 
+    name:'editFInicio', 
+    placeholder:'Fecha de Inicio'}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Fecha de Termino:', 
+    type:'date', 
+    id:'editFTermino', 
+    name:'editFTermino', 
+    placeholder:'Fecha de Termino'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Ventana Emergente', 
+    type:'submit', 
+    id:'btnEditarVentana'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditVentanas=[
+            {name:'editArchivoVentana', validate:'file_max:5|file_type:image/png,image/jpeg,image/webp,video/mp4,video/x-msvideo,.avi'},
+            {name:'editTitulo', validate:'required'},
+            {name:'editFInicio', validate:'required'},
+            {name:'editFTermino', validate:'required'},
+        ];
+
+        const formEditarVentana = document.getElementById('formEditarVentana');
+
+        formEditarVentana.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditVentanas);
+            
+        if(valid){  
+            const id = document.getElementById('id_ventana_emergente').value;
+            const formData = new FormData(formEditarVentana);
+            const response = await fetch('/ventanas_emergentes/'+id + '?uploadPath=/home/ventanas_emergentes&fieldName=editArchivoVentana',{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaVentana');
+                formEditarVentana.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

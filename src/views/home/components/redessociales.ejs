@@ -1,0 +1,29 @@
+ <style>
+     /* Redes sociales fijas izquierda */
+        .social-float {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        @media (max-width: 768px) {
+            .social-float { left: 10px; gap: 8px; }
+            .social-float a { width: 36px; height: 36px; font-size: 18px; }
+            .external-links-vertical { right: 10px; gap: 8px; }
+            .external-links-vertical a { width: 36px; height: 36px; font-size: 1rem; }
+            .submenu-content { position: fixed; left: 50%; transform: translateX(-50%); top: auto; width: 90%; max-width: 280px; }
+            .submenu-group.active .submenu-content { transform: translateX(-50%) translateY(0); }
+        }
+ </style>
+ 
+ <!-- REDES SOCIALES LATERAL IZQUIERDA -->
+    <div class="social-float">
+        <a href="#" class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700"><i class="bi bi-facebook"></i></a>
+        <a href="#" class="bg-sky-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-sky-600"><i class="bi bi-twitter-x"></i></a>
+        <a href="#" class="bg-pink-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-pink-700"><i class="bi bi-instagram"></i></a>
+        <a href="#" class="bg-blue-700 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-800"><i class="bi bi-linkedin"></i></a>
+    </div>

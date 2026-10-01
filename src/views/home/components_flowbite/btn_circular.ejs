@@ -1,0 +1,48 @@
+<!-- Botón Circular Flotante (Volver Arriba) -->
+<button id="btnScrollTop" 
+        onclick="scrollToTop()"
+        type="button"
+        title="Volver arriba"
+        aria-label="Volver arriba"
+        class="fixed bottom-6 right-6 z-50 hidden opacity-0 translate-y-4 transition-all duration-300 ease-in-out
+               w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-r from-[#9b2247] to-[#611323] text-[#e6d194] 
+               border-2 border-[#e6d194] shadow-xl hover:shadow-2xl hover:scale-110 hover:border-white 
+               flex items-center justify-center group focus:outline-none focus:ring-4 focus:ring-[#e6d194]/50">
+  <svg class="w-6 h-6 md:w-7 md:h-7 transition-transform duration-300 group-hover:-translate-y-1" 
+       fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/>
+  </svg>
+</button>
+
+<script >
+  (function() {
+    const btn = document.getElementById('btnScrollTop');
+    if (!btn) return;
+
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 300) {
+        btn.classList.remove('hidden');
+        // Pequeño delay para permitir la transición CSS de opacity y transform
+        setTimeout(() => {
+          btn.classList.remove('opacity-0', 'translate-y-4');
+          btn.classList.add('opacity-100', 'translate-y-0');
+        }, 10);
+      } else {
+        btn.classList.remove('opacity-100', 'translate-y-0');
+        btn.classList.add('opacity-0', 'translate-y-4');
+        setTimeout(() => {
+          if (window.scrollY <= 300) {
+            btn.classList.add('hidden');
+          }
+        }, 300);
+      }
+    });
+  })();
+
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+</script>

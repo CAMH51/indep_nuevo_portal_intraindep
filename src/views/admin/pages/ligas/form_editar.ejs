@@ -1,0 +1,81 @@
+<form id="formEditarLiga">
+<%- include('../../components/inputId',{
+    titulo:'Id Liga:', 
+    type:'text', 
+    id:'id_liga', 
+    name:'id_liga', 
+    placeholder:''}) 
+%>
+
+
+<%- include('../../components/input',{
+    titulo:'Nombre de la liga:', 
+    type:'text', 
+    id:'editNombreLiga', 
+    name:'editNombreLiga', 
+    placeholder:'Nombre de la liga'}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'URL de la liga:', 
+    type:'text', 
+    id:'editUrlLiga', 
+    name:'editUrlLiga', 
+    placeholder:'URL de la liga'}) 
+%>
+
+<%- include('../../components/select',{
+    titulo:'Asociar una página a la Liga (opcional):',
+    texto:'Seleccione una página:', 
+    id:'editPagina',
+    name:'editPagina',
+    opciones:paginas, 
+    opcionId:'id_pagina',
+    opcionNombre:'nombre_pag'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Ligas', 
+    type:'submit', 
+    id:'btnEditarLiga'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditEligas=[
+            {name:'editNombreLiga', validate:'required'},
+        ];
+
+        const formEditarLiga = document.getElementById('formEditarLiga');
+
+        formEditarLiga.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditEligas);
+            
+        if(valid){  
+            const id = document.getElementById('id_liga').value;
+            const formData = new FormData(formEditarLiga);
+            const response = await fetch('/ligas/'+id ,{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaLiga');
+                formEditarLiga.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

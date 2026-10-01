@@ -1,0 +1,62 @@
+
+    <form id="formEditarRol">
+        <%- include('../../../components/inputId',{
+            titulo:'Id Rol:', 
+            type:'text', 
+            id:'id_rol', 
+            name:'id_rol', 
+            placeholder:''}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Nombre del rol:', 
+            type:'text', id:'editRol', 
+            name:'editRol', 
+            placeholder:'Nombre del rol'}) 
+        %>
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Rol', 
+            type:'submit', 
+            id:'btnEditarRol'}) 
+        %>
+    </form>
+
+    <script >
+
+        const validarEditRol =[
+            {name:'editRol', validate:'required|min:5'}
+        ];
+
+        const formEditarRol = document.getElementById('formEditarRol');
+
+        formEditarRol.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditRol);
+            
+        if(valid){  
+            const id = document.getElementById('id_rol').value;
+            const formData = new FormData(formEditarRol);
+            const response = await fetch('/roles/'+id,{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaRoles');
+                formEditarRol.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

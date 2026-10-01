@@ -1,0 +1,109 @@
+<div class="shadow-lg p-4 bg-white  p-4 rounded-xl bg-white h-[700px] overflow-hidden">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nueva Noticia</p>
+    <div class="h-[600px] overflow-x-scroll">
+        <form id="formNoticia">
+            <%- include('../../components/inputFile',{
+                formato:'JPG, PNG, GIF', 
+                id:'imgNoticias', 
+                name:'imgNoticia', 
+                titulo:'Imagen de la Noticia'}) 
+            %>
+            <%- include('../../components/input',{
+                titulo:'Titulo de la Noticia:', 
+                type:'text', id:'titulo', 
+                name:'titulo', 
+                placeholder:'Título de la noticia'}) 
+            %>
+            <%- include('../../components/textarea',{
+                titulo:'Descripción de la Noticia:', 
+                id:'descripcion', 
+                name:'descripcion', 
+                placeholder:'Descripción de la noticia'}) 
+            %>
+            <%- include('../../components/select',{
+                titulo:'Etiquetas:',
+                texto:'Seleccione una etiqueta:' ,
+                id:'etiqueta', 
+                name:'etiqueta',
+                opciones:etiquetas, 
+                opcionId:'id_etiqueta',
+                opcionNombre:'etiqueta'}) 
+            %>
+            <%- include('../../components/select',{
+                titulo:'Asociar una página a la noticia (opcional):',
+                texto:'Seleccione una página:', 
+                id:'pagina',
+                name:'pagina',
+                opciones:paginas, 
+                opcionId:'id_pagina',
+                opcionNombre:'nombre_pag'}) 
+            %>
+            <%- include('../../components/input',{
+                titulo:'URL externa (opcional):', 
+                type:'text', 
+                id:'url_externa', 
+                name:'url_externa', 
+                placeholder:'URL Externa'}) 
+            %>
+    
+            <%- include('../../components/btnGuardar',{
+                texto:'Guardar Noticia', 
+                type:'submit', 
+                id:'btnGuardarNoticia'}) 
+            %>
+        </form>
+    </div>
+</div>
+<%- include('../../components/scriptValidator.ejs',{}) %>
+<script >
+
+    const validarNoticias=[
+        {name:'imgNoticia', validate:'required|file_max:5|file_type:image/png,image/jpeg,image/webp'},
+        {name:'titulo', validate:'required'},
+        {name:'descripcion', validate:'required'},
+        {name:'etiqueta', validate:'required'}
+    ];
+
+    const formNoticia = document.getElementById('formNoticia');
+
+    formNoticia.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarNoticias);
+
+        if(valid){
+            const formData = new FormData(formNoticia);
+            formData.append('id_user',1);
+
+            const response =await fetch('/noticias?uploadPath=/home/noticias&fieldName=imgNoticia',{
+                method: 'POST',
+                body: formData
+            }); 
+
+            const data = await response.json();
+
+            if(response.ok){
+                refrescarTabla('#tablaNoticia')
+                    clearAllFiles();
+                    formNoticia.reset();
+                    document.querySelectorAll('.msg').forEach(el => {
+                        el.className = 'msg';
+                        el.innerHTML = '';
+                    });
+
+                    // Remover clases de error/éxito de todos los campos
+                    document.querySelectorAll('.field').forEach(el => {
+                        el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+                    });
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registro agregado con éxito",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+            }
+        }
+
+    })
+
+</script>

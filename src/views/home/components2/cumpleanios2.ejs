@@ -1,0 +1,284 @@
+<style>
+  .bday-section-header {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .bday-section-header p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: #a08898;
+    margin: 2px 0 0;
+  }
+
+  /* Flechas del carousel */
+  #bday-carousel .carousel-control-prev,
+  #bday-carousel .carousel-control-next {
+    background: #a57f2c;
+    height: 30px;
+    padding: 5px;
+    border-radius: 5px;
+    margin: auto 0;
+    width: auto;
+  }
+
+  /* Card cumpleaños */
+  .bday-card {
+    width: 100%;
+    margin: 0 auto 20px;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow:
+      0 4px 6px rgba(0,0,0,.04),
+      0 12px 40px rgba(0,0,0,.10),
+      0 0 0 1px rgba(0,0,0,.05);
+    background: #fff;
+  }
+
+  .bday-card-header {
+    background: linear-gradient(135deg, #7b1d3f 0%, #c0395e 60%, #e8607a 100%);
+    height: 80px;
+    position: relative;
+  }
+
+  .bday-avatar-wrap {
+    position: absolute;
+    bottom: -44px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .bday-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #611232, #9b2247);
+    border: 4px solid #fff;
+    box-shadow: 0 6px 20px rgba(97, 18, 50, 0.30);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: #fff;
+    overflow: hidden;
+  }
+
+  .bday-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .bday-card-body {
+    padding: 52px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .bday-nombre {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1a1a2e;
+    text-align: center;
+    line-height: 1.25;
+  }
+
+  .bday-fecha {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: #faf4f6;
+    border: 1px solid #f0dde4;
+    border-radius: 50px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #8b2040;
+  }
+
+  .bday-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #c0395e;
+  }
+
+  .bday-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: #a08898;
+    font-size: 14px;
+  }
+  .bday-empty span { font-size: 32px; display: block; margin-bottom: 8px; }
+  
+  /* Swiper styles */
+  .swiper {
+    width: 100%;
+    padding: 20px 0 40px 0;
+  }
+  .swiper-slide {
+    background: transparent;
+  }
+  .swiper-button-next,
+  .swiper-button-prev {
+    color: #c0395e;
+    background: rgba(255,255,255,0.8);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+  }
+  .swiper-button-next:after,
+  .swiper-button-prev:after {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  .swiper-pagination-bullet-active {
+    background: #c0395e;
+  }
+</style>
+
+<section class="w-full  p-2">
+  <%- include('../components2/titulo.ejs',{titulo:"Cumpleaños de la semana."}) %>
+  <div class="flex flex-column justify-between items-center">
+    <div class="text-amarillo-oscuro text-semibold" id="bday-section-header"></div>
+  </div>
+  
+  <div id="divCumplenios"></div>
+
+</section>
+
+<script>
+  const cumpleanios = <%- JSON.stringify(cumpleanios) %>;
+  const bdayInner = document.getElementById('divCumplenios');
+
+  function semanaActual(fecha = new Date()) {
+    const d = new Date(fecha);
+    const dia = d.getDay();
+    const diffLunes = (dia === 0 ? -6 : 1 - dia);
+    const lunes = new Date(d);
+    lunes.setDate(d.getDate() + diffLunes);
+    lunes.setHours(0, 0, 0, 0);
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+    domingo.setHours(23, 59, 59, 999);
+    return { lunes, domingo };
+  }
+
+  function estaEnSemana(fechaStr) {
+    const { lunes, domingo } = semanaActual();
+    const hoy = new Date();
+    const partes = fechaStr.split("-");
+    const mes = parseInt(partes[1], 10) - 1;
+    const dia = parseInt(partes[2], 10);
+    const candidato = new Date(hoy.getFullYear(), mes, dia);
+    return candidato >= lunes && candidato <= domingo;
+  }
+
+  function formatearFecha(fechaStr) {
+    const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                   "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const partes = fechaStr.split("-");
+    const mes = parseInt(partes[1], 10) - 1;
+    const dia = partes[2];
+    return `${meses[mes]}, ${dia}`;
+  }
+
+  function obtenerIniciales(nombreCompleto) {
+    const palabras = nombreCompleto.trim().split(/\s+/);
+    const inicial1 = palabras[0]?.[0]?.toUpperCase() ?? "";
+    const inicial2 = palabras[1]?.[0]?.toUpperCase() ?? "";
+    return inicial1 + inicial2;
+  }
+
+  const { lunes, domingo } = semanaActual();
+  const fmt = d => d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
+  document.getElementById("bday-section-header").innerHTML =
+    `<p>${fmt(lunes)} al ${fmt(domingo)}</p>`;
+
+  const filtrados = cumpleanios.filter(c => estaEnSemana(c.f_nacimiento));
+  let html = "";
+
+  if (filtrados.length === 0) {
+    bdayInner.innerHTML = `
+      <div class="bday-card">
+        <div class="bday-empty">
+          <span>🎈</span>
+          <p>No hay cumpleaños esta semana.</p>
+        </div>
+      </div>`;
+  } else {
+    html += `
+    <div class="swiper mySwiper">
+      <div class="swiper-wrapper">
+    `;
+    
+    filtrados.forEach((c) => {
+      const iniciales = obtenerIniciales(c.nombre + " " + c.ap_paterno);
+      const fecha = formatearFecha(c.f_nacimiento);
+
+      const avatarContent = c.fk_id_archivo !== null
+        ? `<img src="/imagenes/home/cumpleanios/${c.archivo.nombre_archivo}" alt="img_avatar">`
+        : iniciales;
+      
+      html += `
+      <div class="swiper-slide">
+        <div class="bday-card">
+          <div class="bday-card-header">
+            <div class="bday-avatar-wrap">
+              <div class="bday-avatar">${avatarContent}</div>
+            </div>
+          </div>
+          <div class="bday-card-body">
+            <div class="bday-nombre">${c.nombre} ${c.ap_paterno}</div>
+            <div class="bday-fecha">
+              <span class="bday-dot"></span>
+              ${fecha}
+            </div>
+          </div>
+        </div>
+      </div>
+      `;
+    });
+
+    html += `
+      </div>
+      <div class="swiper-button-next"></div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-pagination"></div>
+    </div>
+    `;
+
+    bdayInner.innerHTML = html;
+    
+    // Inicializar Swiper SOLO después de insertar el HTML
+    setTimeout(() => {
+      if (typeof Swiper !== 'undefined') {
+        new Swiper(".mySwiper", {
+          
+          spaceBetween: 30,
+          centeredSlides: true,
+          autoplay: {
+            delay: 2500,
+            disableOnInteraction: false,
+          },
+          pagination: {
+            el: ".swiper-pagination",
+            clickable: true,
+          },
+          navigation: {
+            nextEl: ".swiper-button-next",
+            prevEl: ".swiper-button-prev",
+          },
+          loop: filtrados.length > 1, // Solo loop si hay más de 1
+        });
+      }
+    }, 100);
+  }
+</script>

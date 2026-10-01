@@ -1,0 +1,177 @@
+    <style>
+        /* Transiciones personalizadas para el offcanvas */
+        .offcanvas-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .offcanvas-panel {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .offcanvas-panel.from-left {
+            transform: translateX(-100%);
+        }
+        
+        .offcanvas-panel.from-right {
+            transform: translateX(100%);
+        }
+        
+        .offcanvas-panel.active {
+            transform: translateX(0);
+        }
+        
+        .offcanvas-overlay {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .offcanvas-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Prevenir scroll cuando el offcanvas está abierto */
+        body.no-scroll {
+            overflow: hidden;
+        }
+    </style>
+    
+    <!-- Offcanvas Izquierdo -->
+    <div id="offcanvasLeft" class="fixed inset-0 z-50 pointer-events-none">
+        <!-- Overlay -->
+        <div id="overlayLeft" class="offcanvas-overlay fixed inset-0 bg-black bg-opacity-50 transition-all pointer-events-auto"></div>
+        
+        <!-- Panel -->
+        <div class="offcanvas-panel from-left fixed top-0 left-0 h-full w-80 bg-white shadow-2xl pointer-events-auto">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800">Menú Izquierdo</h2>
+                <button class="closeBtnLeft text-gray-400 hover:text-gray-600 focus:outline-none transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Body -->
+            <div class="p-4">
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="font-medium text-gray-700 mb-2">Navegación</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-600 hover:text-blue-500 block py-1 transition-colors">Inicio</a></li>
+                            <li><a href="#" class="text-gray-600 hover:text-blue-500 block py-1 transition-colors">Acerca de</a></li>
+                            <li><a href="#" class="text-gray-600 hover:text-blue-500 block py-1 transition-colors">Servicios</a></li>
+                            <li><a href="#" class="text-gray-600 hover:text-blue-500 block py-1 transition-colors">Contacto</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-gray-200">
+                        <h3 class="font-medium text-gray-700 mb-2">Configuración</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center justify-between">
+                                <span class="text-gray-600">Notificaciones</span>
+                                <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="toggle1" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer">
+                                    <label for="toggle1" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                                </div>
+                            </label>
+                            <label class="flex items-center justify-between">
+                                <span class="text-gray-600">Modo oscuro</span>
+                                <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="toggle2" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer">
+                                    <label for="toggle2" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <script>
+        class Offcanvas {
+            constructor(elementId, overlayId, isLeft = true) {
+                this.offcanvas = document.getElementById(elementId);
+                this.overlay = document.getElementById(overlayId);
+                this.panel = this.offcanvas.querySelector('.offcanvas-panel');
+                this.isOpen = false;
+                this.isLeft = isLeft;
+                
+                this.init();
+            }
+            
+            init() {
+                // Añadir event listeners para cerrar
+                const closeBtn = this.offcanvas.querySelector('.closeBtn' + (this.isLeft ? 'Left' : 'Right'));
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => this.close());
+                }
+                
+                // Cerrar al hacer clic en el overlay
+                this.overlay.addEventListener('click', () => this.close());
+                
+                // Cerrar con tecla ESC
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.isOpen) {
+                        this.close();
+                    }
+                });
+            }
+            
+            open() {
+                if (this.isOpen) return;
+                
+                this.isOpen = true;
+                this.offcanvas.classList.remove('pointer-events-none');
+                this.overlay.classList.add('active');
+                this.panel.classList.add('active');
+                
+                // Prevenir scroll del body
+                document.body.classList.add('no-scroll');
+            }
+            
+            close() {
+                if (!this.isOpen) return;
+                
+                this.isOpen = false;
+                this.overlay.classList.remove('active');
+                this.panel.classList.remove('active');
+                
+                // Remover clase de scroll después de la animación
+                setTimeout(() => {
+                    if (!this.isOpen) {
+                        this.offcanvas.classList.add('pointer-events-none');
+                        document.body.classList.remove('no-scroll');
+                    }
+                }, 300);
+            }
+            
+            toggle() {
+                if (this.isOpen) {
+                    this.close();
+                } else {
+                    this.open();
+                }
+            }
+        }
+        
+        // Inicializar offcanvases
+        const offcanvasLeft = new Offcanvas('offcanvasLeft', 'overlayLeft', true);
+        const offcanvasRight = new Offcanvas('offcanvasRight', 'overlayRight', false);
+        
+        // Configurar botones para abrir
+        document.getElementById('menuButtonLeft').addEventListener('click', () => offcanvasLeft.open());
+        document.getElementById('openLeftBtn').addEventListener('click', () => offcanvasLeft.open());
+        
+        document.getElementById('menuButtonRight').addEventListener('click', () => offcanvasRight.open());
+        document.getElementById('openRightBtn').addEventListener('click', () => offcanvasRight.open());
+        
+        // Configurar toggles
+        document.querySelectorAll('.toggle-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                console.log(this.checked ? 'Activado' : 'Desactivado');
+            });
+        });
+    </script>

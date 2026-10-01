@@ -1,0 +1,16 @@
+
+<div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
+    <div class="bg-amber-50 px-4 py-3 border-b border-amber-200 flex items-center gap-2"><i class="fas fa-bullhorn text-amber-600 text-xl"></i><h3 class="font-bold text-gray-800">📢 Avisos Importantes</h3></div>
+    <div class="swiper avisosSwiper h-72 md:h-96">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide p-5"><div class="flex gap-3"><i class="fas fa-exclamation-triangle text-amber-500 text-2xl"></i><div><p class="font-semibold">Mantenimiento programado</p><p class="text-sm text-gray-600">25 de agosto de 2am a 5am.</p></div></div></div>
+            <div class="swiper-slide p-5"><div class="flex gap-3"><i class="fas fa-calendar-check text-blue-500 text-2xl"></i><div><p class="font-semibold">Nueva convocatoria</p><p class="text-sm text-gray-600">Cursos gratuitos tecnología.</p></div></div></div>
+            <div class="swiper-slide p-5"><div class="flex gap-3"><i class="fas fa-chart-line text-green-500 text-2xl"></i><div><p class="font-semibold">Crecimiento +15%</p><p class="text-sm text-gray-600">Comunidad en aumento.</p></div></div></div>
+        </div>
+        <div class="swiper-pagination-avisos !bottom-2"></div>
+    </div>
+</div>
+
+<script>
+    const avisosSwiper = new Swiper('.avisosSwiper', { direction: 'vertical', loop: true, autoplay: { delay: 4000 }, pagination: { el: '.swiper-pagination-avisos', clickable: true }, slidesPerView: 1 });
+</script>

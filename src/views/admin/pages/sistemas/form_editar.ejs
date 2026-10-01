@@ -1,0 +1,87 @@
+<form id="formEditarSistemas">
+<%- include('../../components/inputId',{
+    titulo:'Id Sistema:', 
+    type:'text', 
+    id:'id_sistema', 
+    name:'id_sistema', 
+    placeholder:''}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Nombre del sistema:', 
+    type:'text', 
+    id:'editNombreSistema', 
+    name:'editNombreSistema', 
+    placeholder:'Ingresa el nombre del sistema'}); 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Siglas del sistema', 
+    type:'text', 
+    id:'editSiglas', 
+    name:'editSiglas', 
+    placeholder:'Ingresa las siglas del sistema'}); 
+%>
+
+<%- include('../../components/input',{
+    titulo:'URL del sistema', 
+    type:'text', 
+    id:'editUrlSistema', 
+    name:'editUrlSistema', 
+    placeholder:'Ingresa la URL del sistema'}); 
+%>
+
+<%- include('../../components/textarea',{
+    titulo:'Descripción del sistema:', 
+    id:'editDescripcion', 
+    name:'editDescripcion', 
+    placeholder:'Descripción del sistema'}) 
+%>
+
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Sistema', 
+    type:'submit', 
+    id:'btnEditarSistema'}); 
+%>
+</form>
+
+<script >
+
+        const validarEditSistema=[
+        {name:'editNombreSistema', validate:'required'},
+        {name:'editUrlSistema', validate:'required'},
+    ];
+
+        const formEditarSistemas = document.getElementById('formEditarSistemas');
+
+        formEditarSistemas.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditSistema);
+            
+        if(valid){  
+            const id = document.getElementById('id_sistema').value;
+            const formData = new FormData(formEditarSistemas);
+            const response = await fetch('/sistemas/'+id ,{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaSistemas');
+                formEditarSistemas.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

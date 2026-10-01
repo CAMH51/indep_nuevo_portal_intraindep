@@ -1,0 +1,197 @@
+
+<%- include('../components/tarjetas') %>
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition mb-4">
+    <%- include('../components/btnCrear',{id:'btnNuevaPagina', texto:'Nueva Pagina', type:'button'}) %>
+    <h1 class="text-2xl font-bold">Páginas Creadas</h1>
+    <%- include('../components/table',{idTable:'tablaPaginas'}) %>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition mb-4">
+    <h1 class="text-2xl font-bold">Páginas Compartidas</h1>
+    <%- include('../components/table',{idTable:'tablaPaginasCompartidas'}) %>
+</div>
+<%- include('../components/scriptDataTable') %>
+
+<%- include('../components/modalFlowbite.ejs', { modalId: 'nueva_pagina_modal', titulo: 'Nueva Página', bodyPartial: '../pages/form_pagina.ejs', maxWidth: 'max-w-2xl'}) %>
+        
+<%- include('../components/modalFlowbite.ejs', { modalId: 'compartir_pagina_modal', titulo: 'Compartir Página', bodyPartial: '../pages/form_compartir_pagina.ejs', maxWidth: 'max-w-2xl'}) %>
+
+<script >
+    const storages = <%- JSON.stringify(storages) %>;
+    console.log('storages',storages[0].id_storage);
+
+
+    const columnasTablePaginas=[
+        {title:'Id',data:'id_pagina'},
+        {title:'Nombre de la página',data:'nombre_pag'},
+        {title:'Ruta',data:'ruta_pag'},
+        {title:'Estatus',data:'activo',
+            render:function(data,type,row,meta){
+                if(data){
+                    return `
+                        <span class="inline-flex items-center rounded-md bg-green-600 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-700/10">
+                            Activo
+                        </span>
+                    `;
+                }else{
+                    return `
+                        <span class="inline-flex items-center rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-red-700/10">
+                            Inactivo
+                        </span>
+                    `;
+                }
+            }
+        },
+        {title:'Fecha de registro',data:'f_registro', className: "whitespace-nowrap"},
+        {title:'Última actualización',data:'f_modificacion', className: "whitespace-nowrap"},
+        {title:'Acciones',data:null,
+            render:function(data,type,row,meta){
+                let html = "";
+                html += `<a title="Editar" onclick="window.location.href='/editor?storageId=${storages[0].id_storage}&dirPath=${row.ruta_pag}&filename=${row.nombre_pag}'" class="text-xl text-indigo-600 hover:text-indigo-900 mr-3"><i class="bi bi-pencil-square"></i></a>`;
+
+                html += `<button  title="Compatir Página" data-id="${row.id_pagina}" class="bg-rojo-claro text-white rounded-xl p-2 btnCompartirPagina">Compartir</button>`;
+                /* if(row.activo){
+                    html += `<a onclick="activarUsuario(${row.id_pagina},'false')" title="Desactivar Usuario" class="text-xl text-red-500 hover:text-red-700"><i class="bi bi-x-circle"></i></a>`
+                    
+                }else{
+                    html +=`<a onclick="activarUsuario(${row.id_pagina},'true')" title="Activar Usuario" class="text-xl text-green-500 hover:text-green-700"><i class="bi bi-check-circle"></i></a>`;
+                } */
+
+                return html;
+            }
+        },
+
+    ];
+
+    verTabla(columnasTablePaginas,{},'#tablaPaginas','/paginas/user');
+
+    const columnasTablePaginasCompartidas=[
+        {title:'Id',data:'pagina.id_pagina'},
+        {title:'Nombre de la página',data:'pagina.nombre_pag'},
+        {title:'Ruta',data:'pagina.ruta_pag'},
+        {title:'Estatus',data:'pagina.activo',
+            render:function(data,type,row,meta){
+                if(data){
+                    return `
+                        <span class="inline-flex items-center rounded-md bg-green-600 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-700/10">
+                            Activo
+                        </span>
+                    `;
+                }else{
+                    return `
+                        <span class="inline-flex items-center rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-red-700/10">
+                            Inactivo
+                        </span>
+                    `;
+                }
+            }
+        },
+        {title:'Fecha de registro',data:'pagina.f_registro', className: "whitespace-nowrap"},
+        {title:'Última actualización',data:'pagina.f_modificacion', className: "whitespace-nowrap"},
+        {title:'Acciones',data:null,
+            render:function(data,type,row,meta){
+                let html = "";
+                html += `<a title="Editar" onclick="window.location.href='/editor?storageId=${storages[0].id_storage}&dirPath=${row.pagina.ruta_pag}&filename=${row.pagina.nombre_pag}'" class="text-xl text-indigo-600 hover:text-indigo-900 mr-3"><i class="bi bi-pencil-square"></i></a>`;
+
+                //html += `<button id="btnCompartirPagina" title="Compatir Página" data-id="${row.pagina.id_pagina}" class="bg-rojo-claro text-white rounded-xl p-2 btnCompartirPagina">Compartir</button>`;
+                /* if(row.activo){
+                    html += `<a onclick="activarUsuario(${row.id_pagina},'false')" title="Desactivar Usuario" class="text-xl text-red-500 hover:text-red-700"><i class="bi bi-x-circle"></i></a>`
+                    
+                }else{
+                    html +=`<a onclick="activarUsuario(${row.id_pagina},'true')" title="Activar Usuario" class="text-xl text-green-500 hover:text-green-700"><i class="bi bi-check-circle"></i></a>`;
+                } */
+
+                return html;
+            }
+        },
+
+    ];
+    async function verPaginasCompartidas(){
+        const response = await fetch('/compartir_pagina/user/'+ <%=user.id_user%>,{
+            method:'GET'
+        });
+
+        const data = await response.json();
+
+        console.log('paginas compatidas',data);
+    }
+
+    verPaginasCompartidas();
+    verTabla(columnasTablePaginasCompartidas,{},'#tablaPaginasCompartidas','/compartir_pagina/user/'+ <%=user.id_user%>);
+
+    document.getElementById('btnNuevaPagina').addEventListener("click", function(){
+        abrirModal('nueva_pagina_modal');
+    });
+
+    document.getElementById('nueva_pagina_modal-close-btn').addEventListener('click', function () {
+        cerrarModal('nueva_pagina_modal');
+    });
+
+ /*    document.getElementById('btnNuevaPagina').addEventListener("click", () => openModal(0,()=>{}));*/
+
+    document.getElementById('btnGuardarPagina').addEventListener("click", createPage); 
+
+    const formCompartirPagina = document.getElementById('formCompartirPagina');
+    const msjUser = document.getElementById('msgCheck');
+
+    document.addEventListener("click", function(){
+
+        const boton = event.target.closest('.btnCompartirPagina'); 
+        if(boton){
+            const id = boton.dataset.id;
+            formCompartirPagina.reset();
+            msjUser.innerHTML = "";
+            abrirModal('compartir_pagina_modal');
+            document.getElementById('id_pagina').value = id;
+        }
+    });
+
+    document.getElementById('compartir_pagina_modal-close-btn').addEventListener('click', function () {
+        cerrarModal('compartir_pagina_modal');
+    });
+    
+     formCompartirPagina.addEventListener("submit",async(e)=>{
+        e.preventDefault();
+        const formData = new FormData(formCompartirPagina);
+
+        const response = await fetch('/compartir_pagina',{
+            method:'POST',
+            body:formData
+        });
+
+        const data = await response.json();
+
+        if(data.success){
+            Swal.fire({
+                title: data.msg,
+                icon: "success",
+                confirmButtonText: "OK",
+                }).then((result) => {
+                /* Read more about isConfirmed, isDenied below */
+                if (result.isConfirmed){
+                    window.location.reload();
+                }
+            });
+        }else{
+            Swal.fire({
+                    position: "top-end",
+                    icon: "warning",
+                    title: data.msg,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+        }
+    })
+
+    function createPage() {
+        const selected = document.querySelector('input[name="destination"]:checked');
+        if (!selected) return alert('Por favor selecciona una carpeta de destino en el dashboard.');
+        
+        const [storageId, dirPath] = selected.value.split('|');
+        const name = document.getElementById('pageName').value.trim();
+        if(!name) return alert('Ingresa un nombre para la página.');
+        window.location.href = `/editor?storageId=${storageId}&dirPath=${encodeURIComponent(dirPath)}&filename=${encodeURIComponent(name)}`;
+    }
+
+    
+</script>

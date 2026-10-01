@@ -1,0 +1,84 @@
+<div class="shadow-lg p-4 bg-white p-4 rounded-xl bg-white h-[700px] overflow-hidden">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nueva Fotografía</p>
+    <div class="h-[600px] overflow-x-scroll">
+        <form id="formFotografia">
+            <%- include('../../components/inputFile',{
+                formato:'JPG, PNG, GIF', 
+                id:'imgFotografia', 
+                name:'imgFotografia', 
+                titulo:'Imagen de la Fotografía'}) 
+            %>
+
+            <%- include('../../components/input',{
+                titulo:'Alt de la Fotografía:', 
+                type:'text', 
+                id:'alt', 
+                name:'alt', 
+                placeholder:'Alt de la Fotografía'}) 
+            %>
+
+            <%- include('../../components/textarea',{
+                titulo:'Descripción del evento o aviso:', 
+                id:'descripcion', 
+                name:'descripcion', 
+                placeholder:'Descripción del evento o aviso'}) 
+            %>
+
+            <%- include('../../components/btnGuardar',{
+                texto:'Guardar Fotografía', 
+                type:'submit', 
+                id:'btnGuardarFotografia'}) 
+            %>
+        </form>
+    </div>
+</div>
+<%- include('../../components/scriptValidator.ejs',{}) %>
+<script >
+
+    const validarFotografias=[
+        {name:'imgFotografia', validate:'required|file_max:5|file_type:image/png,image/jpeg,image/webp'},
+        {name:'alt', validate:'required'},
+    ];
+
+    const formFotografia = document.getElementById('formFotografia');
+
+    formFotografia.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarFotografias);
+
+        if(valid){
+            const formData = new FormData(formFotografia);
+
+            const response =await fetch('/fotogalerias?uploadPath=/home/fotogalerias&fieldName=imgFotografia',{
+                method: 'POST',
+                body: formData
+            }); 
+
+            const data = await response.json();
+
+            if(response.ok){
+                refrescarTabla('#tablaFotografia')
+                    clearAllFiles();
+                    formFotografia.reset();
+                    document.querySelectorAll('.msg').forEach(el => {
+                        el.className = 'msg';
+                        el.innerHTML = '';
+                    });
+
+                    // Remover clases de error/éxito de todos los campos
+                    document.querySelectorAll('.field').forEach(el => {
+                        el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+                    });
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registro agregado con éxito",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+            }
+        }
+
+    })
+
+</script>

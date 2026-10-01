@@ -1,0 +1,16 @@
+    <form id="formPagina">
+
+        <%- include('../../admin/components/input.ejs',{
+            titulo:'Nombre de la página:', 
+            type:'text', 
+            id:'pageName', 
+            name:'pageName', 
+            placeholder:'Nombre de la página'}) 
+        %>
+
+        <%- include('../../admin/components/btnGuardar',{
+            texto:'Guardar Página', 
+            type:'button', 
+            id:'btnGuardarPagina'}) 
+        %>
+    </form>

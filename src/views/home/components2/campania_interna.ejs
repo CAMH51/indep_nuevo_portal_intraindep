@@ -1,0 +1,62 @@
+<%- include('../components2/titulo.ejs',{titulo:"Campañas Internas"}) %>
+<section class="section_campania_interna w-full" id="campaniaInterna">
+  <%if(campaniasInternas.length == 0){%>
+    <div class="bg-white-card text-center text-muted py-4 mb-4" style="font-size:.87rem;">
+      <i class="bi bi-emoji-smile" style="font-size:2.5rem;color:#ccc;"></i>
+      <p class="mt-2 mb-0">No hay Campaña Interna Publicadas.</p>
+    </div>
+  <%}else{%>
+
+    
+
+<div id="default-carousel" class="relative w-full" data-carousel="slide">
+    <!-- Carousel wrapper -->
+    <div class="relative h-56 overflow-hidden rounded-base md:h-96">
+      <% campaniasInternas.forEach((item,index)=>{ %>
+         <!-- Item 1 -->
+        <a href="<%= item.url_pagina !== null ? item.url_pagina : item.fk_id_pagina !== null ? '/'+ item.pagina.ruta_pag + '/' + item.pagina.nombre_pag : '#'  %>" 
+          target="<% if(item.url_pagina !== null){ %> _blank <%}%>">
+        <!-- Contenedor del slide: asegura que ocupe todo el wrapper -->
+        <div class="hidden duration-700 ease-in-out absolute inset-0" data-carousel-item>
+          <!-- Imagen: ocupa todo el contenedor y se recorta para cubrir -->
+          <img src="/imagenes/home/campanias_internas/<%=item.archivo.nombre_archivo%>" 
+                class="absolute block w-full h-full object-cover top-0 left-0" 
+                alt="...">
+        </div>
+        </a>
+      <%})%>
+
+    </div>
+    <!-- Slider indicators -->
+    <div class="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-3 rtl:space-x-reverse">
+      <% campaniasInternas.forEach((item,index)=>{ %>
+        <button type="button" 
+                class="w-3 h-3 rounded-base bg-gray-400 aria-[current=true]:bg-gray-700 hover:bg-gray-500 transition-colors duration-200" 
+                aria-current="false" 
+                aria-label="Slide <%= index+1 %>" 
+                data-carousel-slide-to="<%= index %>">
+        </button>
+      <%})%>
+    </div>
+    <!-- Slider controls -->
+    <!-- Botón Anterior -->
+    <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-base bg-gray-600/40 hover:bg-gray-600/70 group-focus:ring-4 group-focus:ring-gray-400 dark:group-focus:ring-gray-600 group-focus:outline-none transition-colors duration-200">
+            <svg class="w-5 h-5 text-gray-200 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"/>
+            </svg>
+            <span class="sr-only">Previous</span>
+        </span>
+    </button>
+
+    <!-- Botón Siguiente -->
+    <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-base bg-gray-600/40 hover:bg-gray-600/70 group-focus:ring-4 group-focus:ring-gray-400 dark:group-focus:ring-gray-600 group-focus:outline-none transition-colors duration-200">
+            <svg class="w-5 h-5 text-gray-200 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"/>
+            </svg>
+            <span class="sr-only">Next</span>
+        </span>
+    </button>
+</div>
+<%}%>

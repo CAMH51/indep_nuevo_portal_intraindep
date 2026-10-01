@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>PageVault · Editor — <%= typeof filename !== 'undefined' ? filename : 'nueva-pagina' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/assets/css/fonts.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <style>
+  /* ═══════════════════════════════════════════════════════
+     TOKENS
+  ═══════════════════════════════════════════════════════ */
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  
+  :root{
+    --bg:#fff; --bg2:#a57f2c; --bg3:#a57f2c; --bg4:#222228; --line:#f6f6f7;
+    --amber:#a57f2c; --teal:#42c8c8; --rose:#f56342; --violet:#a78bfa;
+    --green:#6ee7b7; --txt:#e8e6e0; --txt2:#000; --txt3:#fff;
+    --fh:'Noto Sans Regular';
+    --fb:'Noto Sans Regular';
+    --fm:'Noto Sans Regular';
+    --r:10px;
+  }
+  /* ═══════════════════════════════════════════════════════
+     TOP TOOLBAR
+  ═══════════════════════════════════════════════════════ */
+  .toolbar{
+    height:48px; background:#9b2247; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; padding:5px 16px; gap:8px; flex-shrink:0; z-index:100;
+  }
+  .tb-brand{font-family:var(--fh);font-size:17px;color:var(--txt);margin-right:4px;white-space:nowrap}
+  .tb-brand em{color:var(--amber);font-style:italic}
+  .tb-sep{width:1px;height:22px;background:#a57f2c;margin:0 4px}
+  .tb-file{font-family:var(--fm);font-size:15px;color:#98989a;font-weight: bold;}
+  .tb-file span{color:#e6d194
+    ;font-weight: bold;font-size: 15px;}
+
+  .tb-group{display:flex;align-items:center;gap:4px}
+  .tb-group-label{font-family:var(--fm);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--txt3);padding:0 6px}
+
+  .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:all .15s;line-height:1;white-space:nowrap}
+  .btn-amber{background: #989898;;color:#0d0d0e}
+  .btn-amber:hover{filter:brightness(1.1)}
+  .btn-ghost{background:transparent;color: #e6e6e6;;border:1px solid var(--line)}
+  .btn-ghost:hover{background:var(--bg3);color:var(--txt)}
+  .btn-active{background:rgba(245,166,35,.15);color:var(--amber);border:1px solid rgba(245,166,35,.3)}
+  .btn-ico{padding:6px 8px}
+  .tb-spacer{flex:1}
+
+  .preview-toggle{display:flex;background:var(--bg3);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .preview-toggle button{padding:5px 12px;background:none;border:none;color:var(--txt3);font-size:11px;cursor:pointer;font-family:var(--fb);font-weight:600;transition:all .15s}
+  .preview-toggle button.active{background:var(--bg4);color:var(--amber)}
+
+  /* ═══════════════════════════════════════════════════════
+     MAIN EDITOR AREA
+  ═══════════════════════════════════════════════════════ */
+  .editor-shell{display:flex;flex:1;overflow:hidden}
+
+  /* LEFT PANEL — Component palette */
+  .palette{
+    width:200px; background:#a57f2c; border:2px solid #a57f2c;
+    display:flex; flex-direction:column; overflow:hidden; flex-shrink:0;
+  }
+  .palette-head{padding:11px 14px;border-bottom:2px solid #e6d194;font-family:var(--fm);font-size:14px;letter-spacing:2.5px;text-transform:uppercase;color:#fff; font-weight: bold; text-align: center;}
+  .palette-body{flex:1;overflow-y:auto;padding:10px}
+  .palette-sec{font-family:var(--fm);font-size:14px;letter-spacing:2px;text-transform:uppercase;color:#fff;padding:8px 4px 5px;font-weight: bold;}
+
+  .comp-item{
+    display:flex;align-items:center;gap:9px;padding:8px 10px;
+    border-bottom:1px solid #e6d194;background:transparent;
+    margin-bottom:6px;cursor:grab;font-size:12.5px;font-weight:500;color:var(--txt2);
+    transition:border-color .15s,color .15s,transform .15s;user-select:none;
+  }
+  .comp-item:hover{border-color:rgba(245,166,35,.3);color:#9b2247;transform:translateX(2px);background: #e6d194;}
+  .comp-item:active{cursor:grabbing}
+  .comp-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+
+  /* CENTER — Canvas */
+  .canvas-wrap{
+    flex:1;overflow-y:auto;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(97,18,50,.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(30,91,79,.08) 0%, transparent 50%),
+      #f4f1ec;
+    padding:28px;display:flex;flex-direction:column;align-items:center;gap:0;
+  }
+  .canvas-wrap::-webkit-scrollbar{width:5px}
+  .canvas-wrap::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}
+
+  .page-canvas{
+    width:100%;max-width:920px;height:calc(100vh - 200px);
+    display:flex;flex-direction:column;gap:0;
+    background:#fff;
+    box-shadow:0 0 0 1px rgba(0,0,0,.08),0 4px 40px rgba(0,0,0,.12),0 24px 80px rgba(0,0,0,.06);
+    border-radius:4px;
+    overflow:scroll;
+  }
+
+  /* RIGHT PANEL — Properties */
+  .props-panel{
+    width:220px;background:#a57f2c;border:2px solid #a57f2c;;
+    display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;
+  }
+  .pp-head{padding:11px 14px;border-bottom:1px solid #e6d194;display:flex;align-items:center;justify-content:space-between}
+  .pp-title{font-family:var(--fm);font-size:14px;letter-spacing:2.5px;text-transform:uppercase;color:#fff;font-weight: bold;text-align: center}
+  .pp-body{flex:1;overflow-y:auto;padding:12px}
+  .pp-body::-webkit-scrollbar{width:4px}
+  .pp-body::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}
+
+  .pp-sec{font-family:var(--fm);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--txt3);margin:10px 0 6px;padding-top:10px;border-top:1px solid var(--line)}
+  .pp-sec:first-child{margin-top:0;padding-top:0;border-top:none}
+  .pp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+  .pp-label{font-size:11px;color:var(--txt2);flex-shrink:0}
+  .pp-input{
+    width:100%;background:#fff;border:1px solid #e6d194;color: #9b2247;;
+    padding:5px 8px;border-radius:6px;font-family:var(--fb);font-size:11.5px;outline:none;
+    transition:border-color .15s;
+  }
+  .pp-input:focus{border-color:#e6d194}
+  .pp-input.mono{font-family:var(--fm);font-size:11px}
+  .pp-color{width:36px;height:28px;padding:2px;background:var(--bg3);border:1px solid var(--line);border-radius:6px;cursor:pointer}
+  .pp-select{width:100%;border:1px solid var(--line);color: #9b2247;padding:5px 8px;border-radius:6px;font-size:11.5px;outline:none;cursor:pointer}
+  .pp-select option{background: #e6d194;}
+  .pp-btns{display:flex;gap:4px;margin-top:4px}
+  .pp-btn{
+    padding:5px 10px;
+    background:transparent;
+    border:1px solid var(--line);
+    color:#fff;
+    border-radius:6px;
+    font-size:12px;
+    cursor:pointer;
+    transition:all .12s;
+    text-align:center;
+  }
+  .pp-btn:hover{background: #e6e6e6;color: #9b9b9b;}
+  .pp-btn.on{
+    background:#9b2247;
+    color:#fff;
+    border-color:rgba(245,166,35,.3);
+  }
+
+  .pp-empty{text-align:center;padding:30px 10px;color:var(--txt3);font-size:12px}
+  .pp-empty-ico{font-size:28px;margin-bottom:8px}
+
+  /* ═══════════════════════════════════════════════════════
+     SECTIONS
+  ═══════════════════════════════════════════════════════ */
+  .section{
+    width:100%;position:relative;background:#fff;
+    border:2px solid transparent;transition:border-color .15s;
+    margin-bottom:0;
+  }
+  .section:hover>.section-ctrl{opacity:1}
+  .section.selected{border-color:rgba(245,166,35,.5)!important}
+  .section-ctrl{
+    position:absolute;top:-1px;right:-1px;z-index:20;
+    display:flex;gap:3px;background:var(--bg2);border:1px solid var(--line);
+    border-radius:0 0 0 8px;padding:3px 5px;opacity:0;transition:opacity .15s;
+  }
+  .sc-btn{width:22px;height:22px;background:none;border:none;border-radius:4px;cursor:pointer;font-size:12px;color:var(--txt2);display:grid;place-items:center;transition:all .10s}
+  .sc-btn:hover{background:var(--bg3);color:var(--txt)}
+  .sc-btn.red:hover{background:rgba(245,99,66,.2);color:var(--rose)}
+
+  .section-cols{display:flex;width:100%;min-height:80px}
+
+  /* ═══════════════════════════════════════════════════════
+     COLUMNS
+  ═══════════════════════════════════════════════════════ */
+  .col{
+    flex:1;padding:12px;min-height:80px;position:relative;
+    border:2px dashed transparent;transition:border-color .15s,background .15s;
+  }
+  .col+.col{border-left:1px solid rgba(0,0,0,.06)}
+  .col.drag-over{border-color:var(--amber);background:rgba(245,166,35,.06)}
+  .col.selected{border-color:rgba(245,166,35,.4);border-style:solid}
+
+  /* ═══════════════════════════════════════════════════════
+     BLOCKS (components inside cols)
+  ═══════════════════════════════════════════════════════ */
+  .block{
+    position:relative;margin-bottom:6px;outline:2px solid transparent;
+    border-radius:3px;transition:outline-color .12s;cursor:pointer;padding:0;margin:4px 0;
+  }
+  .block:hover{outline-color:rgba(245,166,35,.4)}
+  .block.selected{outline-color:var(--amber)!important}
+  .block-ctrl{
+    position:absolute;top:-1px;right:-1px;z-index:10;
+    display:flex;gap:2px;background:var(--amber);border-radius:0 3px 0 6px;
+    padding:2px 4px;opacity:0;transition:opacity .12s;
+  }
+  .block:hover .block-ctrl,.block.selected .block-ctrl{opacity:1}
+  .bc-btn{width:18px;height:18px;background:none;border:none;cursor:pointer;font-size:11px;color:#0d0d0e;display:grid;place-items:center;border-radius:3px}
+  .bc-btn:hover{background:rgba(0,0,0,.15)}
+
+  .block-handle{
+    position:absolute;left:-20px;top:50%;transform:translateY(-50%);
+    width:16px;height:24px;cursor:grab;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;opacity:0;transition:opacity .12s;
+  }
+  .block:hover .block-handle{opacity:1}
+  .block-handle span{width:10px;height:2px;background:var(--txt3);border-radius:2px;display:block}
+  .block-handle:active{cursor:grabbing}
+
+  /* ═══════════════════════════════════════════════════════
+     BLOCK CONTENT STYLES
+  ═══════════════════════════════════════════════════════ */
+  .block [contenteditable]{
+    outline:none;min-height:1em;word-break:break-word;
+    caret-color:var(--amber);
+  }
+
+  .b-heading1[contenteditable]:empty::before,
+  .b-heading2[contenteditable]:empty::before,
+  .b-heading3[contenteditable]:empty::before {
+    content: attr(data-placeholder);
+    color: #bbb;
+    pointer-events: none;
+    font-style: italic;
+  }
+
+  .b-paragraph[contenteditable]:empty::before,
+  .b-quote[contenteditable]:empty::before {
+    content: none;
+  }
+
+  .b-heading1{font-family:Georgia,serif;font-size:2.2em;font-weight:700;line-height:1.2;color:#1a1a1a}
+  .b-heading2{font-family:Georgia,serif;font-size:1.6em;font-weight:700;line-height:1.3;color:#1a1a1a}
+  .b-heading3{font-family:Georgia,serif;font-size:1.25em;font-weight:700;line-height:1.4;color:#1a1a1a}
+  .b-paragraph{font-size:1em;line-height:1.7;color:#333;font-family:Georgia,serif} 
+  .b-list ul,.b-list ol{padding-left:1.4em;line-height:1.8;color:#333;font-family:Georgia,serif}
+  .b-link a{color:#1a6cf0;text-decoration:underline;font-family:Georgia,serif}
+  .b-divider hr{border:none;border-top:2px solid #e5e5e5;margin:4px 0}
+  .b-button-wrap{display:flex}
+  .b-btn{display:inline-block;padding:10px 24px;background:#1a1a1a;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;font-size:.95em;cursor:default}
+  .b-image-wrap img{max-width:100%;height:auto;display:block}
+  .b-image-wrap{display:flex}
+  .b-image-placeholder{background:#f0f0f0;border:2px dashed #ccc;border-radius:6px;min-height:120px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:13px}
+  .b-file{display: flex;width: 100%;}
+  .b-file a {
+    display: inline-block;
+    text-decoration: underline;
+    color: #1a6cf0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .b-file a:hover {
+    opacity: 0.8;
+  }
+  .b-file a[style*="border"] {
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+  .b-file[style*="justify-content: center"] a {
+    margin: 0 auto;
+  }
+  .b-file[style*="justify-content: flex-end"] a {
+    margin-left: auto;
+  }
+  .b-file[style*="justify-content: flex-start"] a {
+    margin-right: auto;
+  }
+  .b-quote{border-left:4px solid #1a1a1a;padding:8px 16px;background:#f9f9f9;font-style:italic;color:#555;font-family:Georgia,serif;line-height:1.6}
+
+  /* ═══════════════════════════════════════════════════════
+     PREVIEW MODE
+  ═══════════════════════════════════════════════════════ */
+  body.preview-mode .palette,
+  body.preview-mode .props-panel,
+  body.preview-mode .format-bar,
+  body.preview-mode .section-ctrl,
+  body.preview-mode .block-ctrl,
+  body.preview-mode .block-handle,
+  body.preview-mode .add-section-btn{display:none!important}
+  body.preview-mode .section{border-color:transparent!important}
+  body.preview-mode .block{outline:none!important}
+  body.preview-mode .col{border-color:transparent!important}
+  body.preview-mode .col+.col{border-left:none}
+  body.preview-mode [contenteditable]{pointer-events:none}
+  body.preview-mode .canvas-wrap{padding:0}
+
+  /* Toast */
+  .toasts{position:fixed;bottom:18px;right:18px;display:flex;flex-direction:column;gap:8px;z-index:300}
+  .toast{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:11px 15px;display:flex;align-items:center;gap:10px;font-size:12.5px;box-shadow:0 8px 28px rgba(0,0,0,.5);animation:tIn .25s ease;min-width:220px}
+  .toast.ok{border-color:rgba(66,200,200,.3)}.toast.err{border-color:rgba(245,99,66,.3)}
+  @keyframes tIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes tOut{from{opacity:1}to{opacity:0;transform:translateX(110%)}}
+
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}
+  </style>
+</head>
+<body>
+<%- include('../partials/spinner.ejs') %>
+
+<div class="toolbar">
+  <div class="tb-sep"></div>
+  <span class="tb-file">
+    Editando: <span><%= typeof dirPath !== 'undefined' && dirPath ? dirPath + '/' : '' %><%= typeof filename !== 'undefined' ? filename : 'nueva-pagina' %>.ejs</span>
+  </span>
+  <div class="tb-sep"></div>
+
+  <div class="preview-toggle">
+    <button class="active" id="btn-edit-mode" onclick="setMode('edit')">Editor</button>
+    <button id="btn-preview-mode" onclick="setMode('preview')">Vista previa</button>
+  </div>
+
+  <div class="tb-spacer"></div>
+
+  <a href="/dashboard" class="btn btn-ghost">← Volver</a>
+  <button class="btn btn-amber" onclick="savePage()">💾 Guardar</button>
+</div>
+
+<div class="editor-shell">
+<div class="toasts" id="toasts"></div>
+  <!-- LEFT: Component Palette -->
+  <div class="palette">
+    <div class="palette-head">Componentes</div>
+    <div class="palette-body">
+      <div class="palette-sec">Texto</div>
+      <div class="comp-item" draggable="true" data-type="heading1"><span class="comp-ico"><i class="bi bi-type-h1"></i></span> Título grande</div>
+      <div class="comp-item" draggable="true" data-type="heading2"><span class="comp-ico"><i class="bi bi-type-h2"></i></span> Título medio</div>
+      <div class="comp-item" draggable="true" data-type="heading3"><span class="comp-ico"><i class="bi bi-type-h3"></i></span> Título pequeño</div>
+      <div class="comp-item" draggable="true" data-type="paragraph"><span class="comp-ico"><i class="bi bi-text-paragraph"></i></span> Párrafo</div>
+      <div class="comp-item" draggable="true" data-type="quote"><span class="comp-ico"><i class="bi bi-quote"></i></span> Cita</div>
+
+      <div class="palette-sec">Elementos</div>
+      <div class="comp-item" draggable="true" data-type="list"><span class="comp-ico"><i class="bi bi-list-task"></i></span> Lista</div>
+      <div class="comp-item" draggable="true" data-type="link"><span class="comp-ico"><i class="bi bi-link"></i></span> Enlace</div>
+      <div class="comp-item" draggable="true" data-type="button"><span class="comp-ico"><i class="bi bi-app"></i></span> Botón</div>
+      <div class="comp-item" draggable="true" data-type="divider"><span class="comp-ico"><i class="bi bi-hr"></i></span> Divisor</div>
+      <div class="comp-item" draggable="true" data-type="image"><span class="comp-ico"><i class="bi bi-image"></i></span> Imagen</div>
+      <div class="comp-item" draggable="true" data-type="file"><span class="comp-ico"><i class="bi bi-file-earmark"></i></span> Archivo</div>
+
+      <div class="palette-sec">Estructura</div>
+      <div class="comp-item" style="cursor:pointer" onclick="openModal(0,()=>{})" data-type="section">
+        <span class="comp-ico"><i class="bi bi-layout-three-columns"></i></span> Nueva sección
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: Canvas -->
+  <div class="canvas-wrap" id="canvas-wrap">
+    <div class="page-canvas" id="page-canvas">
+    </div>
+  </div>
+
+  <!-- RIGHT: Properties Panel -->
+  <div class="props-panel">
+    <div class="pp-head">
+      <span class="pp-title">Propiedades</span>
+    </div>
+    <div class="pp-body" id="pp-body">
+      <div class="pp-empty">
+        <div class="pp-empty-ico">◎</div>
+        Selecciona un bloque o sección para editar sus propiedades
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%- include('../components/modal',{idModal:"modalSecciones", titulo:"Nueva Sección",body:'../pages/modalColumnas.ejs'}) %>
+
+<script >
+  window.addEventListener('load', function() {
+      const spinner = document.getElementById('spinner');
+      if (spinner) spinner.classList.add('hidden');
+  });
+
+/* ── CONFIG ───────────────────────────────────────── */
+const STORAGE_ID  = '<%= typeof storageId !== "undefined" ? storageId : 1 %>';
+const DIR_PATH    = '<%= typeof dirPath !== "undefined" ? dirPath : "" %>'.replace(/\\/g, '/');
+const FILENAME    = '<%= typeof filename !== "undefined" ? filename : "pagina" %>';
+const INITIAL_EJS = <%- typeof ejsContent !== 'undefined' ? JSON.stringify(ejsContent) : '""' %>;
+const url_api = '<%= typeof url_api !== "undefined" ? url_api : "" %>';
+
+/* ── STATE ────────────────────────────────────────── */
+let selectedBlock   = null;
+let selectedSection = null;
+let dragSrcBlock    = null;
+let dragSrcCol      = null;
+let sectionLayoutSel = { cols: 1, flex: null, bg: '#ffffff' };
+let history = [];
+let historyIdx = -1;
+let undoing = false;
+
+/* ── COUNTERS ─────────────────────────────────────── */
+let secCounter  = 0;
+let blockCounter = 0;
+
+/* ── INIT ─────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  if (INITIAL_EJS.trim()) {
+    loadFromHTML(INITIAL_EJS);
+  } else {
+    addSectionToCanvas(1, null, '#ffffff');
+  }
+  pushHistory();
+});
+
+/* ═══════════════════════════════════════════════════
+   SECTION MODAL
+═══════════════════════════════════════════════════ */
+function openSectionModal() {
+  sectionLayoutSel = { cols: 1, flex: null, bg: '#ffffff' };
+  document.querySelectorAll('.layout-opt').forEach(o => o.classList.remove('sel'));
+  const firstOpt = document.querySelector('[data-cols="1"]');
+  if (firstOpt) firstOpt.classList.add('sel');
+  $('#modalSecciones').modal('show');
+}
+
+const closeModalBtn = document.getElementById('closeModalBtn');
+if (closeModalBtn) {
+  closeModalBtn.addEventListener('click',()=>{
+    closeModal();
+  });
+}
+function closeSectionModal(e) {
+  if (e && e.target.id !== 'section-overlay') return;
+   $('#modalSecciones').modal('hide');
+}
+function selectLayout(el) {
+  document.querySelectorAll('.layout-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+  sectionLayoutSel.cols = parseInt(el.dataset.cols);
+  sectionLayoutSel.flex = el.dataset.flex || null;
+}
+function selectSwatch(el) {
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('sel'));
+  el.classList.add('sel');
+  sectionLayoutSel.bg = el.dataset.color;
+}
+function addSection() {
+  addSectionToCanvas(sectionLayoutSel.cols, sectionLayoutSel.flex, sectionLayoutSel.bg);
+  closeModal();
+  pushHistory();
+}
+
+/* ═══════════════════════════════════════════════════
+   BUILD SECTION DOM
+═══════════════════════════════════════════════════ */
+function addSectionToCanvas(cols, flex, bg, insertBefore = null) {
+  const secId = 'sec-' + (++secCounter);
+  const sec   = document.createElement('div');
+  sec.className = 'section';
+  sec.dataset.secid = secId;
+  sec.dataset.bg = bg || '#ffffff';
+  sec.style.backgroundColor = bg || '#ffffff';
+  sec.style.padding = '0';
+
+  sec.innerHTML = `
+    <div class="section-ctrl">
+      <button class="sc-btn" onclick="moveSectionUp(this)" title="Subir">↑</button>
+      <button class="sc-btn" onclick="moveSectionDown(this)" title="Bajar">↓</button>
+      <button class="sc-btn" onclick="openSectionProps(this)" title="Propiedades">⚙</button>
+      <button class="sc-btn red" onclick="deleteSection(this)" title="Eliminar">✕</button>
+    </div>
+    <div class="section-cols" data-secid="${secId}"></div>`;
+
+  const colsWrap = sec.querySelector('.section-cols');
+  const flexArr = flex ? flex.split(',').map(Number) : Array(cols).fill(1);
+  for (let i = 0; i < cols; i++) {
+    const col = buildCol(secId, i, flexArr[i] || 1);
+    colsWrap.appendChild(col);
+  }
+
+  sec.addEventListener('click', e => {
+    if (!e.target.closest('.block') && !e.target.closest('.sc-btn')) {
+      selectSection(sec);
+    }
+  });
+
+  const canvas = document.getElementById('page-canvas');
+  if (insertBefore) {
+    canvas.insertBefore(sec, insertBefore);
+  } else {
+    canvas.appendChild(sec);
+  }
+  return sec;
+}
+
+function buildCol(secId, idx, flexVal) {
+  const col = document.createElement('div');
+  col.className = 'col';
+  col.dataset.secid = secId;
+  col.dataset.colidx = idx;
+  col.style.flex = flexVal;
+
+  col.addEventListener('dragover', e => {
+    e.preventDefault();
+    col.classList.add('drag-over');
+  });
+  col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+  col.addEventListener('drop', e => {
+    e.preventDefault();
+    col.classList.remove('drag-over');
+    const type = e.dataTransfer.getData('block-type');
+    const srcId = e.dataTransfer.getData('block-id');
+
+    if (type) {
+      const block = createBlock(type);
+      col.appendChild(block);
+      selectBlock(block);
+      pushHistory();
+    } else if (srcId) {
+      const existing = document.getElementById(srcId);
+      if (existing) {
+        col.appendChild(existing);
+        selectBlock(existing);
+        pushHistory();
+      }
+    }
+  });
+  return col;
+}
+
+/* ═══════════════════════════════════════════════════
+   CREATE BLOCK
+═══════════════════════════════════════════════════ */
+function createBlock(type, data = {}) {
+  const id = 'blk-' + (++blockCounter);
+  const wrap = document.createElement('div');
+  wrap.className = 'block';
+  wrap.id = id;
+  wrap.dataset.type = type;
+  wrap.draggable = true;
+
+  if (type === 'image') {
+    setTimeout(() => {
+      const placeholder = wrap.querySelector('.b-image-placeholder');
+      if (placeholder) {
+        placeholder.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectBlock(wrap);
+          const url = prompt('Ingresa la URL de la imagen:', 'https://');
+          if (url) {
+            setImageSrc(url);
+          }
+        });
+      }
+    }, 0);
+  }
+
+  let defaultStyles = "";
+  if (type === 'heading1') defaultStyles = 'font-size: 35px;';
+  else if (type === 'heading2') defaultStyles = 'font-size: 30px;';
+  else if (type === 'heading3') defaultStyles = 'font-size: 25px;';
+  else if (type === 'paragraph') defaultStyles = 'font-size: 16px;';
+  else if (type === 'quote') defaultStyles = 'font-size: 14px;';
+  else if (type === 'list') defaultStyles = 'font-size: 16px;';
+
+  const finalStyles = data.style ? data.style : defaultStyles;
+
+  wrap.innerHTML = `
+    <div class="block-handle"><span></span><span></span><span></span></div>
+    <div class="block-ctrl">
+      <button class="bc-btn" onclick="moveBlockUp(this)" title="Subir">↑</button>
+      <button class="bc-btn" onclick="moveBlockDown(this)" title="Bajar">↓</button>
+      <button class="bc-btn" onclick="duplicateBlock(this)" title="Duplicar">⧉</button>
+      <button class="bc-btn" onclick="deleteBlock(this)" title="Eliminar">✕</button>
+    </div>
+    ${blockInnerHTML(type, {...data, style:finalStyles})}`;
+
+  wrap.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('block-id', id);
+    e.stopPropagation();
+    setTimeout(() => wrap.style.opacity = '.4', 0);
+  });
+  wrap.addEventListener('dragend', () => { wrap.style.opacity = '1'; });
+
+  wrap.addEventListener('click', e => {
+    if (e.target.tagName === 'A' || e.target.closest('a')) {
+      return;
+    }
+    e.stopPropagation();
+    selectBlock(wrap);
+  });
+
+  let debTimer;
+  wrap.addEventListener('input', () => {
+    clearTimeout(debTimer);
+    debTimer = setTimeout(pushHistory, 800);
+  });
+
+  return wrap;
+}
+
+function blockInnerHTML(type, data = {}) {
+  const style = data.style || '';
+  switch(type) {
+    case 'heading1':  return `<div class="b-heading1"  contenteditable="true" data-placeholder="Título principal" style="${style}">${data.text !== undefined ? data.text :''}</div>`;
+    case 'heading2':  return `<div class="b-heading2"  contenteditable="true" data-placeholder="Subtítulo" style="${style}">${data.text !== undefined ? data.text :''}</div>`;
+    case 'heading3':  return `<div class="b-heading3"  contenteditable="true" data-placeholder="Encabezado menor" style="${style}">${data.text !== undefined ? data.text :''}</div>`;
+    case 'paragraph': return `<div class="b-paragraph" contenteditable="true" data-placeholder="Escribe un párrafo..." style="${style}">${data.text !== undefined ? data.text :''}</div>`;
+    case 'quote':     return `<blockquote class="b-quote" contenteditable="true" data-placeholder="Escribe una cita..." style="${style}">${data.text !== undefined ? data.text :''}</blockquote>`;
+    case 'list': {
+      const listType = data.listType === 'ol' ? 'ol' : 'ul';
+      const styleType = data.listStyleType || (listType === 'ol' ? 'decimal' : 'disc');
+      return `<div class="b-list" style="${style}"><${listType} contenteditable="true" style="list-style-type:${styleType};list-style-position:outside;padding-left:1.4em;">${data.listHTML || '<li>' + (data.text || 'Elemento de lista') + '</li>'}</${listType}></div>`;
+    }
+    case 'link':
+      return `<div class="b-link" style="${style}"><a href="${data.href||'#'}" contenteditable="true" data-placeholder="Texto del enlace">${data.text !== undefined ? data.text :'Mi Enlace'}</a></div>`;
+    case 'button':
+      return `<div class="b-button-wrap" style="justify-content:${data.align||'flex-start'}"><a href="${data.href||'#'}" class="b-btn" style="${style}" contenteditable="true">${data.text || 'Botón'}</a></div>`;
+    case 'divider':
+      return `<div class="b-divider"><hr/></div>`;
+    case 'image':
+      const align = data.align || 'flex-start';
+      const imgStyle = data.style || '';
+      if (data.src) {
+        return `<div class="b-image-wrap" style="justify-content:${align}">
+                  <img src="${data.src}" alt="${data.alt || ''}" style="max-width:100%;height:auto;display:block;${imgStyle}"/>
+                </div>`;
+      } else {
+        return `<div class="b-image-placeholder" style="display:flex;align-items:center;justify-content:center;min-height:120px;background:#f0f0f0;border:2px dashed #ccc;border-radius:6px;color:#aaa;font-size:13px;cursor:pointer;" onclick="this.closest('.block') && selectBlock(this.closest('.block'))">
+                  🖼 Haz clic para agregar imagen
+                </div>`;
+      }
+    case 'file':
+      const fileStyle = data.style || '';
+      const fileAlign = data.align || 'flex-start';
+      return `<div class="b-file" style="display:flex;justify-content:${fileAlign};${fileStyle}">
+            <a href="${data.href || '#'}" 
+               ${data.download ? 'download' : ''} 
+               ${data.target ? `target="${data.target}"` : ''}
+               style="${data.linkStyle || ''}">
+              ${data.text || 'Descargar archivo'}
+            </a>
+          </div>`;
+    default: return "";
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   PALETTE DRAG
+═══════════════════════════════════════════════════ */
+document.querySelectorAll('.comp-item[draggable]').forEach(item => {
+  item.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('block-type', item.dataset.type);
+  });
+});
+
+/* ═══════════════════════════════════════════════════
+   SELECTION
+═══════════════════════════════════════════════════ */
+function selectBlock(block) {
+  document.querySelectorAll('.block.selected').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.section.selected').forEach(s => s.classList.remove('selected'));
+  selectedBlock   = block;
+  selectedSection = null;
+  block.classList.add('selected');
+  renderBlockProps(block);
+}
+
+function selectSection(sec) {
+  document.querySelectorAll('.block.selected').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.section.selected').forEach(s => s.classList.remove('selected'));
+  selectedSection = sec;
+  selectedBlock   = null;
+  sec.classList.add('selected');
+  renderSectionProps(sec);
+}
+
+document.getElementById('canvas-wrap').addEventListener('click', e => {
+  if (!e.target.closest('.block') && !e.target.closest('.section')) {
+    document.querySelectorAll('.block.selected, .section.selected').forEach(el => el.classList.remove('selected'));
+    selectedBlock = null; selectedSection = null;
+    document.getElementById('pp-body').innerHTML = `<div class="pp-empty"><div class="pp-empty-ico">◎</div>Selecciona un bloque o sección</div>`;
+  }
+});
+
+function setBlockStyle(prop, val) {
+  setPropStyle(prop, val);
+}
+
+/* ═══════════════════════════════════════════════════
+   PROPERTIES PANEL
+═══════════════════════════════════════════════════ */
+function renderBlockProps(block) {
+  const type = block.dataset.type;
+  
+  const isImage = (type === 'image');
+  const isFile = (type === 'file');
+  const isLink = (type === 'link');
+  const isButton = (type === 'button');
+  const isDivider = (type === 'divider');
+  const isList = (type === 'list');
+  const isText = ['heading1', 'heading2', 'heading3', 'paragraph', 'quote'].includes(type);
+  
+  let html = `<p class="pp-sec">Bloque: ${typeLabel(type)}</p>`;
+
+  if (isText) {
+    const content = getEditableElement(block); 
+    if (!content) {
+      html += `<div class="pp-empty">Bloque de texto sin editor</div>`;
+    } else {
+      const computedStyle = window.getComputedStyle(content);
+      const inlineStyle = content.style;
+
+      function getStyleValue(property, defaultValue = '') {
+        if (inlineStyle[property]) return inlineStyle[property];
+        const computed = computedStyle[property];
+        if (computed && computed !== defaultValue) return computed;
+        return defaultValue;
+      }
+
+      function isStyleActive(property, value) {
+        const current = getStyleValue(property);
+        if(property === 'fontWeight'){
+            return current === 'bold' || current === '700';
+        }
+        return current === value;
+      }
+
+      const fontSize = getStyleValue('fontSize', '16px');
+      const fontSizeNum = parseInt(fontSize) || 16;
+      const fontFamily = getStyleValue('fontFamily', '');
+      const color = getStyleValue('color', '#333333');
+      const bgColor = getStyleValue('backgroundColor', '#ffffff');
+      const textAlign = getStyleValue('textAlign', 'left');
+      
+      html += `
+        <p class="pp-sec">Tipografía</p>
+        <div class="pp-row"><span class="pp-label">Tamaño</span>
+          <input type="number" class="pp-input" style="width:70px" value="${fontSizeNum}"
+            oninput="setPropStyle('fontSize', this.value ? this.value + 'px' : '')"
+            onchange="setPropStyle('fontSize', this.value ? this.value + 'px' : '')"/></div>
+        <div class="pp-row"><span class="pp-label">Familia</span>
+          <select class="pp-select" onchange="setPropStyle('fontFamily', this.value)">
+            <option value="">Por defecto</option>
+            <option value="'Outfit', sans-serif" ${fontFamily.includes('Outfit') ? 'selected' : ''}>Outfit</option>
+            <option value="'DM Serif Display', serif" ${fontFamily.includes('DM Serif Display') ? 'selected' : ''}>DM Serif Display</option>
+            <option value="'JetBrains Mono', monospace" ${fontFamily.includes('JetBrains Mono') ? 'selected' : ''}>JetBrains Mono</option>
+            <option value="'Noto Sans Regular', sans-serif" ${fontFamily.includes('Noto Sans') ? 'selected' : ''}>Noto Sans</option>
+            <option value="Georgia, serif" ${fontFamily.includes('Georgia') ? 'selected' : ''}>Georgia</option>
+            <option value="Arial, sans-serif" ${fontFamily.includes('Arial') ? 'selected' : ''}>Arial</option>
+            <option value="'Courier New', monospace" ${fontFamily.includes('Courier') ? 'selected' : ''}>Courier New</option>
+            <option value="'Times New Roman', serif" ${fontFamily.includes('Times') ? 'selected' : ''}>Times New Roman</option>
+            <option value="Verdana, sans-serif" ${fontFamily.includes('Verdana') ? 'selected' : ''}>Verdana</option>
+          </select></div>
+        <div class="pp-row"><span class="pp-label">Estilo</span>
+          <div class="pp-btns">
+            <button class="pp-btn ${isStyleActive('fontWeight', 'bold') ? 'on' : ''}" 
+              onclick="togglePropStyle('fontWeight', 'bold', 'normal')"><b>B</b></button>
+            <button class="pp-btn ${isStyleActive('fontStyle', 'italic') ? 'on' : ''}" 
+              onclick="togglePropStyle('fontStyle', 'italic', 'normal')"><i>I</i></button>
+            <button class="pp-btn ${isStyleActive('textDecoration', 'underline') ? 'on' : ''}" 
+              onclick="togglePropStyle('textDecoration', 'underline', 'none')"><u>U</u></button>
+          </div></div>
+        <div class="pp-row"><span class="pp-label">Alineación</span>
+          <div class="pp-btns">
+            <button class="pp-btn ${textAlign === 'left' ? 'on' : ''}" onclick="setPropStyle('textAlign','left'); renderBlockProps(selectedBlock);"><i class="bi bi-text-left"></i></button>
+            <button class="pp-btn ${textAlign === 'center' ? 'on' : ''}" onclick="setPropStyle('textAlign','center'); renderBlockProps(selectedBlock);"><i class="bi bi-text-center"></i></button>
+            <button class="pp-btn ${textAlign === 'right' ? 'on' : ''}" onclick="setPropStyle('textAlign','right'); renderBlockProps(selectedBlock);"><i class="bi bi-text-right"></i></button>
+            <button class="pp-btn ${textAlign === 'justify' ? 'on' : ''}" onclick="setPropStyle('textAlign','justify'); renderBlockProps(selectedBlock);"><i class="bi bi-justify"></i></button>
+          </div></div>
+        <p class="pp-sec">Color</p>
+        <div class="pp-row"><span class="pp-label">Texto</span>
+          <input type="color" class="pp-color" value="${rgbToHex(color)}"
+            oninput="setPropStyle('color', this.value)"
+            onchange="setPropStyle('color', this.value)"/></div>
+        <div class="pp-row"><span class="pp-label">Fondo</span>
+          <input type="color" class="pp-color" value="${rgbToHex(bgColor)}"
+            oninput="setPropStyle('backgroundColor', this.value)"
+            onchange="setPropStyle('backgroundColor', this.value)"/></div>`;
+    }
+  }
+  else if (isList) {
+    const listEl = block.querySelector('ul, ol');
+    if (!listEl) {
+      html += `<div class="pp-empty">Bloque de lista sin editor</div>`;
+    } else {
+      const computedStyle = window.getComputedStyle(listEl);
+      const inlineStyle = listEl.style;
+
+      function getListStyleValue(property, defaultValue = '') {
+        if (inlineStyle[property]) return inlineStyle[property];
+        const computed = computedStyle[property];
+        if (computed && computed !== defaultValue) return computed;
+        return defaultValue;
+      }
+
+      const fontSize = getListStyleValue('fontSize', '');
+      const fontSizeNum = parseInt(fontSize) || 16;
+      const fontFamily = getListStyleValue('fontFamily', '');
+      const color = getListStyleValue('color', '#333333');
+      const bgColor = getListStyleValue('backgroundColor', '#ffffff');
+      const isOrdered = listEl.tagName.toLowerCase() === 'ol';
+      const currentBullet = listEl.style.listStyleType || (isOrdered ? 'decimal' : 'disc');
+
+      html += `
+        <p class="pp-sec">Tipo de lista</p>
+        <div class="pp-row">
+          <div class="pp-btns" style="width:100%">
+            <button class="pp-btn ${!isOrdered ? 'on' : ''}" onclick="setListType('ul')"><i class="bi bi-list-ul"></i> Viñetas</button>
+            <button class="pp-btn ${isOrdered ? 'on' : ''}" onclick="setListType('ol')"><i class="bi bi-list-ol"></i> Numerada</button>
+          </div>
+        </div>
+        <div class="pp-row"><span class="pp-label">Viñeta</span>
+          <select class="pp-select" onchange="setListStyleType(this.value)">
+            ${!isOrdered ? `
+              <option value="disc" ${currentBullet==='disc'?'selected':''}>● Disco</option>
+              <option value="circle" ${currentBullet==='circle'?'selected':''}>○ Círculo</option>
+              <option value="square" ${currentBullet==='square'?'selected':''}>■ Cuadrado</option>
+              <option value="none" ${currentBullet==='none'?'selected':''}>Ninguna</option>
+            ` : `
+              <option value="decimal" ${currentBullet==='decimal'?'selected':''}>1, 2, 3…</option>
+              <option value="decimal-leading-zero" ${currentBullet==='decimal-leading-zero'?'selected':''}>01, 02, 03…</option>
+              <option value="lower-alpha" ${currentBullet==='lower-alpha'?'selected':''}>a, b, c…</option>
+              <option value="upper-alpha" ${currentBullet==='upper-alpha'?'selected':''}>A, B, C…</option>
+              <option value="lower-roman" ${currentBullet==='lower-roman'?'selected':''}>i, ii, iii…</option>
+              <option value="none" ${currentBullet==='none'?'selected':''}>Ninguna</option>
+            `}
+          </select></div>
+
+        <p class="pp-sec">Elementos</p>
+        <div class="pp-row">
+          <div class="pp-btns" style="width:100%">
+            <button class="pp-btn" onclick="addListItem()">+ Agregar elemento</button>
+            <button class="pp-btn" onclick="removeListItem()">− Quitar último</button>
+          </div>
+        </div>
+
+        <p class="pp-sec">Tipografía</p>
+        <div class="pp-row"><span class="pp-label">Tamaño</span>
+          <input type="number" class="pp-input" style="width:70px" value="${fontSizeNum}"
+            oninput="setListStyle('fontSize', this.value ? this.value+'px' : '')"
+            onchange="setListStyle('fontSize', this.value ? this.value+'px' : '')"/></div>
+        <div class="pp-row"><span class="pp-label">Familia</span>
+          <select class="pp-select" onchange="setListStyle('fontFamily', this.value)">
+            <option value="">Por defecto</option>
+            <option value="'Outfit', sans-serif" ${fontFamily.includes('Outfit') ? 'selected' : ''}>Outfit</option>
+            <option value="'Noto Sans Regular', sans-serif" ${fontFamily.includes('Noto Sans') ? 'selected' : ''}>Noto Sans Regular</option>
+            <option value="Georgia, serif" ${fontFamily.includes('Georgia') ? 'selected' : ''}>Georgia</option>
+            <option value="'Courier New', monospace" ${fontFamily.includes('Courier') ? 'selected' : ''}>Courier New</option>
+            <option value="Arial, sans-serif" ${fontFamily.includes('Arial') ? 'selected' : ''}>Arial</option>
+            <option value="'Times New Roman', serif" ${fontFamily.includes('Times') ? 'selected' : ''}>Times New Roman</option>
+            <option value="Verdana, sans-serif" ${fontFamily.includes('Verdana') ? 'selected' : ''}>Verdana</option>
+          </select></div>
+
+        <p class="pp-sec">Color</p>
+        <div class="pp-row"><span class="pp-label">Texto</span>
+          <input type="color" class="pp-color" value="${rgbToHex(color)}"
+            oninput="setListStyle('color', this.value)"
+            onchange="setListStyle('color', this.value)"/></div>
+        <div class="pp-row"><span class="pp-label">Fondo</span>
+          <input type="color" class="pp-color" value="${rgbToHex(bgColor)}"
+            oninput="setListStyle('backgroundColor', this.value)"
+            onchange="setListStyle('backgroundColor', this.value)"/></div>`;
+    }
+  }
+  else if (isImage) {
+    const img = block.querySelector('img');
+    const wrap = block.querySelector('.b-image-wrap');
+    
+    const src = img ? img.src : '';
+    const alt = img ? img.alt : '';
+    const width = img ? img.style.width : '';
+    const height = img ? img.style.height : '';
+    const borderRadius = img ? img.style.borderRadius : '';
+    const border = img ? img.style.border : '';
+    const boxShadow = img ? img.style.boxShadow : '';
+    const align = wrap ? wrap.style.justifyContent : 'flex-start';
+    
+    html += `
+      <p class="pp-sec">Imagen</p>
+      <div class="pp-row"><span class="pp-label">Subir archivo</span></div>
+      <input type="file" class="pp-input" style="margin-bottom:12px" accept="image/*" onchange="uploadImage(this)"/>
+      
+      <div class="pp-row"><span class="pp-label">URL de imagen</span></div>
+      <input type="text" class="pp-input mono" style="margin-bottom:12px;width:100%" value="${escapeHtml(src)}"
+        onchange="setImageSrc(this.value)" placeholder="https://ejemplo.com/imagen.jpg"/>
+      
+      <div class="pp-row"><span class="pp-label">Texto alternativo</span></div>
+      <input type="text" class="pp-input" style="margin-bottom:12px;width:100%" value="${escapeHtml(alt)}"
+        onchange="setImageAlt(this.value)" placeholder="Descripción de la imagen"/>
+      
+      <p class="pp-sec">Alineación</p>
+      <div class="pp-row">
+        <div class="pp-btns" style="width:100%">
+          <button class="pp-btn ${align === 'flex-start' ? 'on' : ''}" onclick="setImageAlign('flex-start')"><i class="bi bi-text-left"></i> Izquierda</button>
+          <button class="pp-btn ${align === 'center' ? 'on' : ''}" onclick="setImageAlign('center')"><i class="bi bi-text-center"></i> Centro</button>
+          <button class="pp-btn ${align === 'flex-end' ? 'on' : ''}" onclick="setImageAlign('flex-end')"><i class="bi bi-text-right"></i> Derecha</button>
+        </div>
+      </div>
+      
+      <p class="pp-sec">Dimensiones</p>
+      <div class="pp-row"><span class="pp-label">Ancho</span>
+        <input type="text" class="pp-input" style="width:100px" value="${width || 'auto'}"
+          onchange="setImageStyle('width', this.value)"/></div>
+      <div class="pp-row"><span class="pp-label">Alto</span>
+        <input type="text" class="pp-input" style="width:100px" value="${height || 'auto'}"
+          onchange="setImageStyle('height', this.value)"/></div>
+      
+      <p class="pp-sec">Estilo</p>
+      <div class="pp-row"><span class="pp-label">Borde redondeado</span>
+        <input type="text" class="pp-input" style="width:100px" value="${borderRadius || '0px'}"
+          onchange="setImageStyle('borderRadius', this.value)"/></div>
+      <div class="pp-row"><span class="pp-label">Borde</span>
+        <input type="text" class="pp-input" style="width:100px" value="${border || ''}"
+          onchange="setImageStyle('border', this.value)"/></div>
+      <div class="pp-row"><span class="pp-label">Sombra</span>
+        <input type="text" class="pp-input" style="width:100%" value="${boxShadow || ''}"
+          onchange="setImageStyle('boxShadow', this.value)"/></div>`;
+  }
+  else if (isFile) {
+    const link = block.querySelector('a');
+    const wrap = block.querySelector('.b-file');
+    
+    const computedStyle = link ? window.getComputedStyle(link) : null;
+    const inlineStyle = link ? link.style : {};
+    
+    function getLinkStyleValue(property, defaultValue = '') {
+      if (inlineStyle[property]) return inlineStyle[property];
+      if (computedStyle && computedStyle[property]) return computedStyle[property];
+      return defaultValue;
+    }
+    
+    const fontSize = getLinkStyleValue('fontSize', '');
+    const fontSizeNum = parseInt(fontSize) || 14;
+    const fontFamily = getLinkStyleValue('fontFamily', '');
+    const color = getLinkStyleValue('color', '#1a6cf0');
+    const bgColor = getLinkStyleValue('backgroundColor', 'transparent');
+    const textAlign = getLinkStyleValue('textAlign', 'left');
+    const textDecoration = getLinkStyleValue('textDecoration', 'underline');
+    const fontWeight = getLinkStyleValue('fontWeight', 'normal');
+    const fontStyle = getLinkStyleValue('fontStyle', 'normal');
+    
+    const align = wrap ? wrap.style.justifyContent || 'flex-start' : 'flex-start';
+
+    html += `
+    <p class="pp-sec">Archivo</p>
+    <div class="pp-row"><span class="pp-label">Subir archivo</span></div>
+    <input type="file" class="pp-input" style="margin-bottom:12px" onchange="uploadFile(this)" accept=".pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .rtf"/>
+    
+    <div class="pp-row"><span class="pp-label">URL / Ruta</span></div>
+    <input type="text" class="pp-input mono" style="margin-bottom:12px;width:100%" value="${escapeHtml(link?.getAttribute('href') || '')}"
+      onchange="setPropAttr('a','href',this.value)" placeholder="ruta/archivo.pdf"/>
+    
+    <div class="pp-row"><span class="pp-label">Texto</span></div>
+    <input type="text" class="pp-input" style="margin-bottom:12px;width:100%" value="${escapeHtml(link?.textContent || '')}"
+      oninput="setPropTextContent('a',this.value)" placeholder="Texto del enlace"/>
+    
+    <p class="pp-sec">Alineación</p>
+    <div class="pp-row">
+      <div class="pp-btns" style="width:100%">
+        <button class="pp-btn ${align === 'flex-start' ? 'on' : ''}" onclick="setFileAlign('flex-start')">⬱ Izquierda</button>
+        <button class="pp-btn ${align === 'center' ? 'on' : ''}" onclick="setFileAlign('center')">☰ Centro</button>
+        <button class="pp-btn ${align === 'flex-end' ? 'on' : ''}" onclick="setFileAlign('flex-end')">⬰ Derecha</button>
+      </div>
+    </div>
+    
+    <p class="pp-sec">Tipografía</p>
+    <div class="pp-row"><span class="pp-label">Tamaño</span>
+      <input type="number" class="pp-input" style="width:70px" value="${fontSizeNum}"
+        oninput="setPropTagStyle('a', 'fontSize', this.value ? this.value+'px' : '')"
+        onchange="setPropTagStyle('a', 'fontSize', this.value ? this.value+'px' : '')"/></div>
+    <div class="pp-row"><span class="pp-label">Familia</span>
+      <select class="pp-select" onchange="setPropTagStyle('a', 'fontFamily', this.value)">
+        <option value="">Por defecto</option>
+        <option value="'Outfit', sans-serif" ${fontFamily.includes('Outfit') ? 'selected' : ''}>Outfit</option>
+        <option value="'Noto Sans Regular', sans-serif" ${fontFamily.includes('Noto Sans') ? 'selected' : ''}>Noto Sans Regular</option>
+        <option value="Georgia, serif" ${fontFamily.includes('Georgia') ? 'selected' : ''}>Georgia</option>
+        <option value="'Courier New', monospace" ${fontFamily.includes('Courier') ? 'selected' : ''}>Courier New</option>
+        <option value="Arial, sans-serif" ${fontFamily.includes('Arial') ? 'selected' : ''}>Arial</option>
+        <option value="'Times New Roman', serif" ${fontFamily.includes('Times') ? 'selected' : ''}>Times New Roman</option>
+        <option value="Verdana, sans-serif" ${fontFamily.includes('Verdana') ? 'selected' : ''}>Verdana</option>
+      </select></div>
+    
+    <div class="pp-row"><span class="pp-label">Estilo</span>
+      <div class="pp-btns">
+        <button class="pp-btn ${fontWeight === 'bold' ? 'on' : ''}" 
+          onclick="toggleFileStyle('fontWeight', 'bold', 'normal')"><b>B</b></button>
+        <button class="pp-btn ${fontStyle === 'italic' ? 'on' : ''}" 
+          onclick="toggleFileStyle('fontStyle', 'italic', 'normal')"><i>I</i></button>
+        <button class="pp-btn ${textDecoration !== 'underline' && textDecoration !== '' ? 'on' : ''}" 
+          onclick="toggleFileUnderline()"><u>U</u></button>
+      </div></div>
+    
+    <div class="pp-row"><span class="pp-label">Colores</span></div>
+    <div class="pp-row"><span class="pp-label">Texto</span>
+      <input type="color" class="pp-color" value="${rgbToHex(color)}"
+        oninput="setPropTagStyle('a','color',this.value)"
+        onchange="setPropTagStyle('a','color',this.value)"/></div>
+    <div class="pp-row"><span class="pp-label">Fondo</span>
+      <input type="color" class="pp-color" value="${rgbToHex(bgColor)}"
+        oninput="setPropTagStyle('a','backgroundColor',this.value)"
+        onchange="setPropTagStyle('a','backgroundColor',this.value)"/></div>`;
+  }
+  else if (isLink || isButton) {
+    const link = block.querySelector('a');
+    html += `
+      <p class="pp-sec">Enlace</p>
+      <div class="pp-row"><span class="pp-label">URL</span></div>
+      <input type="text" class="pp-input mono" style="margin-bottom:12px;width:100%" value="${link?.href || ''}"
+        onchange="setPropAttr('a','href',this.value)" placeholder="https://..."/>
+      <div class="pp-row"><span class="pp-label">Texto</span></div>
+      <input type="text" class="pp-input" style="margin-bottom:12px;width:100%" value="${link?.textContent || ''}"
+        oninput="setPropTextContent('a',this.value)" placeholder="Texto del enlace"/>
+      ${isButton ? `
+      <div class="pp-row"><span class="pp-label">Color botón</span>
+        <input type="color" class="pp-color" value="${rgbToHex(link?.style.backgroundColor) || '#1a1a1a'}"
+          oninput="setPropTagStyle('a','backgroundColor',this.value)"
+          onchange="setPropTagStyle('a','backgroundColor',this.value)"/></div>
+      <div class="pp-row"><span class="pp-label">Color texto</span>
+        <input type="color" class="pp-color" value="${rgbToHex(link?.style.color) || '#ffffff'}"
+          oninput="setPropTagStyle('a','color',this.value)"
+          onchange="setPropTagStyle('a','color',this.value)"/></div>
+      ` : ''}`;
+  }
+  else if (isDivider) {
+    const hr = block.querySelector('hr');
+    html += `
+      <p class="pp-sec">Divisor</p>
+      <div class="pp-row"><span class="pp-label">Color</span>
+        <input type="color" class="pp-color" value="${hr?.style.borderTopColor ? rgbToHex(hr.style.borderTopColor) : '#e5e5e5'}"
+          oninput="setPropTagStyle('hr','borderTopColor',this.value)"
+          onchange="setPropTagStyle('hr','borderTopColor',this.value)"/></div>
+      <div class="pp-row"><span class="pp-label">Grosor</span>
+        <input type="text" class="pp-input" style="width:70px" value="${hr?.style.borderTopWidth || '2px'}"
+          onchange="setPropTagStyle('hr','borderTopWidth',this.value)"/></div>
+      <div class="pp-row"><span class="pp-label">Estilo</span>
+        <select class="pp-select" onchange="setPropTagStyle('hr','borderTopStyle',this.value)">
+          <option value="solid" ${hr?.style.borderTopStyle === 'solid' ? 'selected' : ''}>Sólido</option>
+          <option value="dashed" ${hr?.style.borderTopStyle === 'dashed' ? 'selected' : ''}>Rayado</option>
+          <option value="dotted" ${hr?.style.borderTopStyle === 'dotted' ? 'selected' : ''}>Punteado</option>
+          <option value="double" ${hr?.style.borderTopStyle === 'double' ? 'selected' : ''}>Doble</option>
+        </select></div>`;
+  }
+  
+  if (!isDivider) {
+    const contentEl = getEditableElement(block) || block;
+    const currentPad = contentEl.style.padding || '';
+    const currentMar = contentEl.style.marginBottom || contentEl.style.margin || '';
+
+    html += `
+      <p class="pp-sec">Espaciado</p>
+      <div class="pp-row"><span class="pp-label">Padding</span>
+        <input type="text" class="pp-input" style="width:70px" value="${escapeHtml(currentPad)}"
+          oninput="setPropStyle('padding', this.value)"
+          onchange="setPropStyle('padding', this.value)" placeholder="8px"/></div>
+      <div class="pp-row"><span class="pp-label">Margen inferior</span>
+        <input type="text" class="pp-input" style="width:70px" value="${escapeHtml(currentMar)}"
+          oninput="setPropStyle('marginBottom', this.value)"
+          onchange="setPropStyle('marginBottom', this.value)" placeholder="6px"/></div>`;
+  }
+
+  html += `
+    <div style="margin-top:10px;display:flex;gap:6px">
+      <button class="btn btn-ghost" style="flex:1;font-size:11px" onclick="duplicateBlock(selectedBlock?.querySelector('.bc-btn'))">Duplicar</button>
+      <button class="btn" style="flex:1;font-size:11px;background:#611232;color:#e6d194;border:1px solid rgba(245,99,66,.25)" onclick="deleteBlock(selectedBlock?.querySelector('.bc-btn'))">Eliminar</button>
+    </div>`;
+
+  document.getElementById('pp-body').innerHTML = html;
+}
+
+/* ─ List block setters ─ */
+function setListStyle(prop, val) {
+  if (!selectedBlock) return;
+  const el = selectedBlock.querySelector('ul, ol');
+  if (el) {
+    el.style[prop] = val;
+    pushHistory();
+  }
+}
+function setListStyleType(val) {
+  if (!selectedBlock) return;
+  const el = selectedBlock.querySelector('ul, ol');
+  if (el) {
+    el.style.listStyleType = val;
+    pushHistory();
+  }
+}
+function setListType(newTag) {
+  if (!selectedBlock) return;
+  const el = selectedBlock.querySelector('ul, ol');
+  if (!el) return;
+  const currentTag = el.tagName.toLowerCase();
+  if (currentTag === newTag) return;
+  const newEl = document.createElement(newTag);
+  newEl.setAttribute('contenteditable', 'true');
+  newEl.innerHTML = el.innerHTML;
+  newEl.style.cssText = el.style.cssText;
+  newEl.style.listStyleType = newTag === 'ol' ? 'decimal' : 'disc';
+  el.parentNode.replaceChild(newEl, el);
+  pushHistory();
+  renderBlockProps(selectedBlock);
+}
+function addListItem() {
+  if (!selectedBlock) return;
+  const el = selectedBlock.querySelector('ul, ol');
+  if (el) {
+    const li = document.createElement('li');
+    li.textContent = 'Elemento de lista';
+    el.appendChild(li);
+    pushHistory();
+  }
+}
+function removeListItem() {
+  if (!selectedBlock) return;
+  const el = selectedBlock.querySelector('ul, ol');
+  if (el && el.children.length > 1) {
+    el.lastElementChild.remove();
+    pushHistory();
+  } else {
+    toast('err', 'La lista necesita al menos un elemento');
+  }
+}
+
+function setFileAlign(align) {
+  if (!selectedBlock) return;
+  const wrap = selectedBlock.querySelector('.b-file');
+  if (wrap) {
+    wrap.style.justifyContent = align;
+    pushHistory();
+    renderBlockProps(selectedBlock);
+  }
+}
+
+function toggleFileStyle(prop, onValue, offValue) {
+  if (!selectedBlock) return;
+  const link = selectedBlock.querySelector('a');
+  if (link) {
+    const currentValue = link.style[prop];
+    if (prop === 'fontWeight') {
+      link.style.fontWeight = (currentValue === 'bold' || currentValue === '700') ? 'normal' : 'bold';
+    } else if (prop === 'fontStyle') {
+      link.style.fontStyle = currentValue === 'italic' ? 'normal' : 'italic';
+    } else {
+      link.style[prop] = currentValue === onValue ? offValue : onValue;
+    }
+    pushHistory();
+    renderBlockProps(selectedBlock);
+  }
+}
+
+function setFileUnderline(active) {
+  if (!selectedBlock) return;
+  const link = selectedBlock.querySelector('a');
+  if (link) {
+    link.style.textDecoration = active ? 'underline' : 'none';
+    pushHistory();
+    renderBlockProps(selectedBlock);
+  }
+}
+
+function toggleFileUnderline() {
+  if (!selectedBlock) return;
+  const link = selectedBlock.querySelector('a');
+  if (link) {
+    const current = link.style.textDecoration;
+    link.style.textDecoration = current === 'underline' ? 'none' : 'underline';
+    pushHistory();
+    renderBlockProps(selectedBlock);
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderSectionProps(sec) {
+  const html = `
+    <p class="pp-sec">Sección</p>
+    <div class="pp-row"><span class="pp-label">Fondo</span>
+      <input type="color" class="pp-color" value="${sec.dataset.bg||'#ffffff'}"
+        oninput="sec.style.backgroundColor=this.value;sec.dataset.bg=this.value"
+        onchange="sec.style.backgroundColor=this.value;sec.dataset.bg=this.value"/></div>
+    <div class="pp-row"><span class="pp-label">Padding Y</span>
+      <input type="text" class="pp-input" style="width:70px" value="${sec.style.paddingTop||'16px'}"
+        onchange="sec.style.paddingTop=this.value;sec.style.paddingBottom=this.value"/></div>
+    <div class="pp-row"><span class="pp-label">Padding X</span>
+      <input type="text" class="pp-input" style="width:70px" value="${sec.style.paddingLeft||'0px'}"
+        onchange="sec.style.paddingLeft=this.value;sec.style.paddingRight=this.value"/></div>
+    <p class="pp-sec">Columnas</p>
+    <p style="font-size:11px;color:var(--txt2);margin-bottom:8px">Agrega o ajusta las columnas de esta sección.</p>
+    <button class="btn btn-ghost" style="width:100%;font-size:11px;margin-bottom:6px" onclick="addColToSection(selectedSection)">+ Agregar columna</button>
+    <button class="btn btn-ghost" style="width:100%;font-size:11px" onclick="removeColFromSection(selectedSection)">− Quitar columna</button>
+    <p class="pp-sec">Acciones</p>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-ghost" style="flex:1;font-size:11px" onclick="moveSectionUp(selectedSection?.querySelector('.sc-btn'))">↑ Subir</button>
+      <button class="btn btn-ghost" style="flex:1;font-size:11px" onclick="moveSectionDown(selectedSection?.querySelectorAll('.sc-btn')[1])">↓ Bajar</button>
+    </div>
+    <button class="btn" style="width:100%;margin-top:6px;font-size:11px;background:rgba(245,99,66,.12);color:var(--rose);border:1px solid rgba(245,99,66,.25)"
+      onclick="deleteSection(selectedSection?.querySelector('.sc-btn'))">Eliminar sección</button>`;
+  document.getElementById('pp-body').innerHTML = html;
+}
+
+function getEditableElement(block) {
+  if (!block) return null;
+  return block.querySelector('.b-heading1, .b-heading2, .b-heading3, .b-paragraph, .b-quote, .b-list, .b-link, .b-button-wrap, .b-file, .b-image-wrap, [contenteditable]');
+}
+
+function setPropStyle(prop, val) {
+  if (!selectedBlock) return;
+  const el = getEditableElement(selectedBlock) || selectedBlock;
+  if (el) { 
+    el.style[prop] = val;
+    
+    // Si la propiedad afecta texto o dimensiones, limpia hijos para permitir cascada CSS pura
+    if (['fontSize', 'fontFamily', 'color', 'backgroundColor'].includes(prop)) {
+      el.querySelectorAll('*').forEach(child => {
+        if (child.style) child.style[prop] = '';
+      });
+    }
+    
+    pushHistory();
+  }
+}
+
+function togglePropStyle(prop, onValue, offValue) {
+  if (!selectedBlock) return;
+  const el = getEditableElement(selectedBlock);
+  if (el) { 
+    const currentValue = el.style[prop];
+    
+    if (prop === 'fontWeight') {
+      if (currentValue === 'bold' || currentValue === '700' || currentValue === 'bolder') {
+        el.style.fontWeight = 'normal';
+      } else {
+        el.style.fontWeight = 'bold';
+      }
+    } else if (prop === 'fontStyle') {
+      el.style.fontStyle = currentValue === 'italic' ? 'normal' : 'italic';
+    } else if (prop === 'textDecoration') {
+      el.style.textDecoration = currentValue === 'underline' ? 'none' : 'underline';
+    } else {
+      el.style[prop] = currentValue === onValue ? offValue : onValue;
+    }
+    
+    pushHistory();
+    renderBlockProps(selectedBlock);
+  }
+}
+
+function setPropAttr(tag, attr, val) {
+  if (!selectedBlock) return;
+  const el = selectedBlock.querySelector(tag);
+  if (el) { el[attr] = val; pushHistory(); }
+}
+function setPropTagStyle(tag, prop, val) {
+  if (!selectedBlock) return;
+  const el = selectedBlock.querySelector(tag);
+  if (el) {
+    if (val && val !== '') {
+      el.style[prop] = val;
+    } else {
+      el.style[prop] = '';
+    }
+    pushHistory();
+  }
+}
+function setPropTextContent(tag, val) {
+  if (!selectedBlock) return;
+  const el = selectedBlock.querySelector(tag);
+  if (el) {
+    el.textContent = val;
+    pushHistory();
+  }
+}
+
+function setImageSrc(src) {
+  if (!selectedBlock) return;
+  let img = selectedBlock.querySelector('img');
+  
+  if (!img) {
+    const placeholder = selectedBlock.querySelector('.b-image-placeholder');
+    if (placeholder) {
+      placeholder.outerHTML = `<div class="b-image-wrap" style="justify-content: flex-start"><img src="${src}" style="max-width:100%;height:auto;display:block"/></div>`;
+    }
+  } else {
+    img.src = src;
+  }
+  pushHistory();
+  renderBlockProps(selectedBlock);
+}
+
+function setImageAlt(alt) {
+  if (!selectedBlock) return;
+  const img = selectedBlock.querySelector('img');
+  if (img) {
+    img.alt = alt;
+    pushHistory();
+  }
+}
+
+function setImageAlign(align) {
+  if (!selectedBlock) return;
+  const wrap = selectedBlock.querySelector('.b-image-wrap');
+  if (wrap) {
+    wrap.style.justifyContent = align;
+    pushHistory();
+    renderBlockProps(selectedBlock);
+  }
+}
+
+function setImageStyle(prop, val) {
+  if (!selectedBlock) return;
+  const img = selectedBlock.querySelector('img');
+  if (img) {
+    if (val && val !== 'auto') {
+      img.style[prop] = val;
+    } else {
+      img.style[prop] = '';
+    }
+    pushHistory();
+  }
+}
+
+function uploadImage(input) {
+  if (!selectedBlock) {
+    toast('err', 'Selecciona un bloque de imagen primero');
+    return;
+  }
+  
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      toast('err', 'Por favor selecciona un archivo de imagen válido');
+      input.value = '';
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      setImageSrc(e.target.result);
+      toast('ok', 'Imagen cargada correctamente');
+      input.value = '';
+    };
+    reader.onerror = function() {
+      toast('err', 'Error al cargar la imagen');
+      input.value = '';
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function uploadFile(input) {
+  if (!selectedBlock) {
+    toast('err', 'Selecciona un bloque de archivo primero');
+    return;
+  }
+  
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+      const dataUrl = e.target.result;
+      const link = selectedBlock.querySelector('a');
+      if (link) {
+        link.href = dataUrl;
+        link.setAttribute('data-filename', file.name);
+        link.setAttribute('download', file.name);
+
+        if (!link.textContent.trim() || link.textContent === 'Descargar archivo') {
+          link.textContent = "Descargar archivo";
+        }
+        
+        pushHistory();
+        renderBlockProps(selectedBlock);
+        toast('ok', `Archivo "${file.name}" cargado correctamente`);
+      }
+      input.value = '';
+    };
+    
+    reader.onerror = function() {
+      toast('err', 'Error al cargar el archivo');
+      input.value = '';
+    };
+    
+    reader.readAsDataURL(file);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   BLOCK OPERATIONS
+═══════════════════════════════════════════════════ */
+function deleteBlock(btn) {
+  const block = btn?.closest?.('.block') || selectedBlock;
+  if (!block) return;
+  if (selectedBlock === block) { 
+    selectedBlock = null; 
+    document.getElementById('pp-body').innerHTML = '<div class="pp-empty"><div class="pp-empty-ico">◎</div>Selecciona un elemento</div>'; 
+  }
+  block.remove();
+  pushHistory();
+}
+
+function duplicateBlock(btn) {
+  const block = btn?.closest('.block') || selectedBlock;
+  if (!block) return;
+  const clone = block.cloneNode(true);
+  clone.id = 'blk-' + (++blockCounter);
+  block.parentNode.insertBefore(clone, block.nextSibling);
+  rebindCanvas();
+  selectBlock(clone);
+  pushHistory();
+}
+
+function moveBlockUp(btn) {
+  const block = btn.closest('.block');
+  const prev = block.previousElementSibling;
+  if (prev && prev.classList.contains('block')) { block.parentNode.insertBefore(block, prev); pushHistory(); }
+}
+function moveBlockDown(btn) {
+  const block = btn.closest('.block');
+  const next = block.nextElementSibling;
+  if (next && next.classList.contains('block')) { block.parentNode.insertBefore(next, block); pushHistory(); }
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION OPERATIONS
+═══════════════════════════════════════════════════ */
+function deleteSection(btn) {
+  const sec = btn?.closest?.('.section') || selectedSection;
+  if (!sec) return;
+  if (document.querySelectorAll('.section').length <= 1) { toast('err', 'Debe haber al menos una sección'); return; }
+  sec.remove();
+  selectedSection = null;
+  document.getElementById('pp-body').innerHTML = '<div class="pp-empty"><div class="pp-empty-ico">◎</div>Selecciona un elemento</div>';
+  pushHistory();
+}
+function moveSectionUp(btn) {
+  const sec  = btn?.closest?.('.section') || selectedSection;
+  const prev = sec?.previousElementSibling;
+  if (sec && prev && prev.classList.contains('section')) { sec.parentNode.insertBefore(sec, prev); pushHistory(); }
+}
+function moveSectionDown(btn) {
+  const sec  = btn?.closest?.('.section') || selectedSection;
+  const next = sec?.nextElementSibling;
+  if (sec && next && next.classList.contains('section')) { sec.parentNode.insertBefore(next, sec); pushHistory(); }
+}
+function addColToSection(sec) {
+  if (!sec) return;
+  const colsWrap = sec.querySelector('.section-cols');
+  const idx = colsWrap.children.length;
+  const col = buildCol(sec.dataset.secid, idx, 1);
+  colsWrap.appendChild(col);
+  pushHistory();
+}
+function removeColFromSection(sec) {
+  if (!sec) return;
+  const colsWrap = sec.querySelector('.section-cols');
+  if (colsWrap.children.length > 1) { colsWrap.lastElementChild.remove(); pushHistory(); }
+  else toast('err', 'La sección necesita al menos 1 columna');
+}
+function openSectionProps(btn) {
+  const sec = btn.closest('.section');
+  selectSection(sec);
+}
+
+/* ═══════════════════════════════════════════════════
+   HISTORY (Undo/Redo)
+═══════════════════════════════════════════════════ */
+function pushHistory() {
+  if (undoing) return;
+  const snap = document.getElementById('page-canvas').innerHTML;
+  history = history.slice(0, historyIdx + 1);
+  history.push(snap);
+  if (history.length > 60) history.shift();
+  historyIdx = history.length - 1;
+}
+function histUndo() {
+  if (historyIdx <= 0) return;
+  undoing = true;
+  historyIdx--;
+  document.getElementById('page-canvas').innerHTML = history[historyIdx];
+  rebindCanvas();
+  undoing = false;
+}
+function histRedo() {
+  if (historyIdx >= history.length - 1) return;
+  undoing = true;
+  historyIdx++;
+  document.getElementById('page-canvas').innerHTML = history[historyIdx];
+  rebindCanvas();
+  undoing = false;
+}
+function rebindCanvas() {
+  document.querySelectorAll('.col').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+    col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+    col.addEventListener('drop', e => {
+      e.preventDefault(); col.classList.remove('drag-over');
+      const type = e.dataTransfer.getData('block-type');
+      const srcId = e.dataTransfer.getData('block-id');
+      if (type) { const b = createBlock(type); col.appendChild(b); selectBlock(b); pushHistory(); }
+      else if (srcId) { const ex = document.getElementById(srcId); if (ex) { col.appendChild(ex); pushHistory(); } }
+    });
+  });
+  document.querySelectorAll('.block').forEach(block => {
+    block.addEventListener('click', e => { e.stopPropagation(); selectBlock(block); });
+    block.addEventListener('dragstart', e => { e.dataTransfer.setData('block-id', block.id); e.stopPropagation(); setTimeout(()=>block.style.opacity='.4',0); });
+    block.addEventListener('dragend', () => block.style.opacity='1');
+  });
+  document.querySelectorAll('.section').forEach(sec => {
+    sec.addEventListener('click', e => { if(!e.target.closest('.block')&&!e.target.closest('.sc-btn')) selectSection(sec); });
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); histUndo(); }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); histRedo(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); savePage(); }
+});
+
+/* ═══════════════════════════════════════════════════
+   PREVIEW MODE
+═══════════════════════════════════════════════════ */
+function setMode(mode) {
+  document.body.classList.toggle('preview-mode', mode === 'preview');
+  document.getElementById('btn-edit-mode').classList.toggle('active', mode === 'edit');
+  document.getElementById('btn-preview-mode').classList.toggle('active', mode === 'preview');
+}
+
+/* ═══════════════════════════════════════════════════
+   SERIALIZE
+═══════════════════════════════════════════════════ */
+function serializeToHTML() {
+  const sections = document.querySelectorAll('#page-canvas .section');
+  let bodyHTML = '';
+
+  sections.forEach(sec => {
+    const bg   = sec.dataset.bg || '#98989a';
+    const padT = sec.style.paddingTop    || '32px';
+    const padB = sec.style.paddingBottom || '32px';
+    const padL = sec.style.paddingLeft   || '0px';
+    const padR = sec.style.paddingRight  || '0px';
+
+    bodyHTML += `<section data-pad-t="${padT}" data-pad-b="${padB}" data-pad-l="${padL}" data-pad-r="${padR}" style="background:${bg};padding:${padT} 0 ${padB} 0;width:100%;box-sizing:border-box;">\n`;
+    bodyHTML += `  <div class="content-wrap" style="max-width:1200px;margin:0 auto;padding-left:calc(${padL} + 20px);padding-right:calc(${padR} + 20px);display:flex;flex-wrap:wrap;width:100%;">\n`;
+
+    sec.querySelectorAll('.col').forEach(col => {
+      const flex = col.style.flex || '1';
+      bodyHTML += `  <div style="flex:${flex};padding:8px 12px;min-width:0;box-sizing:border-box;">\n`;
+
+      col.querySelectorAll('.block').forEach(block => {
+        const clone = block.cloneNode(true);
+        clone.querySelectorAll('.block-ctrl,.block-handle').forEach(el => el.remove());
+        clone.querySelectorAll('[contenteditable]').forEach(el => {
+          el.removeAttribute('contenteditable');
+          el.removeAttribute('data-placeholder');
+        });
+        bodyHTML += '    ' + clone.innerHTML.trim() + '\n';
+      });
+
+      bodyHTML += '  </div>\n';
+    });
+    bodyHTML += '  </div>\n';
+    bodyHTML += '</section>\n';
+  });
+
+  const pageCSS = `
+  section{width:100%}
+  h1,h2,h3{line-height:1.2}
+  img{max-width:100%;height:auto;display:block}
+  ul,ol{padding-left:1.5em}
+  blockquote{border-left:4px solid #1a1a1a;padding:8px 16px;background:#f9f9f9;font-style:italic;color:#555}
+  .b-heading1{font-family:Georgia,serif;font-size:2.2em;font-weight:700;line-height:1.2;color:#1a1a1a}
+  .b-heading2{font-family:Georgia,serif;font-size:1.6em;font-weight:700;line-height:1.3}
+  .b-heading3{font-family:Georgia,serif;font-size:1.25em;font-weight:700;line-height:1.4}
+  .b-paragraph{font-size:1em;line-height:1.7;color:#333}
+  .b-list ul,.b-list ol{padding-left:1.4em;line-height:1.8;list-style-position:outside}
+  .b-list ul{list-style-type:disc}
+  .b-list ol{list-style-type:decimal}
+  .b-link a{color:#1a6cf0;text-decoration:underline}
+  .b-divider hr{border:none;border-top:2px solid #e5e5e5;margin:8px 0}
+  .b-button-wrap{display:flex}
+  .b-image-wrap{display:flex}
+  .b-btn{display:inline-block;padding:10px 24px;background:#1a1a1a;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;font-size:.95em}
+  .b-quote{border-left:4px solid #1a1a1a;padding:8px 16px;background:#f9f9f9;font-style:italic;color:#555}
+  .b-file a{color:#1a6cf0;text-decoration:underline;cursor:pointer}`;
+
+  return `
+  ${bodyHTML}
+  <style>${pageCSS}</style>
+`;
+}
+
+/* ═══════════════════════════════════════════════════
+   LOAD FROM HTML
+═══════════════════════════════════════════════════ */
+function loadFromHTML(htmlStr) {
+  const canvas = document.getElementById('page-canvas');
+  canvas.innerHTML = '';
+  secCounter = 0; blockCounter = 0;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlStr, 'text/html');
+  const savedSecs = doc.querySelectorAll('section');
+
+  if (savedSecs.length === 0) {
+    addSectionToCanvas(1, null, '#98989a');
+    return;
+  }
+
+  savedSecs.forEach(savedSec => {
+    const bg = savedSec.style.background || '#ffffff';
+    
+    let cols = savedSec.querySelectorAll(':scope > .content-wrap > div');
+    if (cols.length === 0) cols = savedSec.querySelectorAll(':scope > div');
+
+    const flexArr = Array.from(cols).map(c => c.style.flex || '1');
+
+    const sec = addSectionToCanvas(cols.length, flexArr.join(','), bg);
+
+    let pT = savedSec.dataset.padT;
+    let pB = savedSec.dataset.padB;
+    let pL = savedSec.dataset.padL;
+    let pR = savedSec.dataset.padR;
+
+    if (!pT) {
+      const styleStr = savedSec.getAttribute('style') || '';
+      const padMatch = styleStr.match(/padding:\s*([^ ]+)\s+calc\(([^)]+)\s*\+\s*20px\)\s+([^ ]+)\s+calc\(([^)]+)\s*\+\s*20px\)/);
+      if (padMatch) {
+        pT = padMatch[1]; pL = padMatch[2]; pB = padMatch[3]; pR = padMatch[4];
+      } else {
+        pT = savedSec.style.paddingTop || '16px';
+        pB = savedSec.style.paddingBottom || '16px';
+        pL = savedSec.style.paddingLeft || '0px';
+        pR = savedSec.style.paddingRight || '0px';
+        if (pL.includes('calc')) pL = pL.replace(/calc\(([^)]+)\s*\+\s*20px\)/, '$1').trim();
+        if (pR.includes('calc')) pR = pR.replace(/calc\(([^)]+)\s*\+\s*20px\)/, '$1').trim();
+      }
+    }
+
+    sec.style.paddingTop = pT; sec.style.paddingBottom = pB;
+    sec.style.paddingLeft = pL; sec.style.paddingRight = pR;
+    sec.dataset.padT = pT; sec.dataset.padB = pB; sec.dataset.padL = pL; sec.dataset.padR = pR;
+
+    const domCols = sec.querySelectorAll('.col');
+    cols.forEach((savedCol, ci) => {
+      const domCol = domCols[ci];
+      if (!domCol) return;
+ 
+      Array.from(savedCol.children).forEach(child => {
+        const type = detectBlockType(child);
+        const data = extractBlockData(child, type);
+        
+        if (type === 'image' && data.src && !data.src.match(/^(http|\/|data:)/)) {
+          data.src = `/imagenes/${DIR_PATH}/${data.src}`;
+        }
+        if (type === 'file' && data.href && !data.href.match(/^(http|#|\/|data:)/)) {
+          data.href = `/imagenes/${DIR_PATH}/${data.href}`;
+        }
+
+        const block = createBlock(type, data);
+        domCol.appendChild(block);
+      });
+    });
+  });
+}
+
+function extractBlockData(el, type) {
+  const data = {};
+  const contentEl =
+    el.querySelector('.b-heading1') ||
+    el.querySelector('.b-heading2') ||
+    el.querySelector('.b-heading3') ||
+    el.querySelector('.b-paragraph') ||
+    el.querySelector('.b-quote') ||
+    el;
+  const styleAttr = contentEl.getAttribute('style') || '';
+
+  switch (type) {
+    case 'heading1':
+    case 'heading2':
+    case 'heading3':
+    case 'paragraph':
+      data.text = contentEl.innerHTML || '';
+      data.style = styleAttr;
+      break;
+    case 'quote':
+      data.text = contentEl.innerHTML || '';
+      data.style = styleAttr;
+      break;
+    case 'list': {
+      const list = el.querySelector('ul, ol') || el;
+      data.listHTML = list.innerHTML || '<li>Elemento de lista</li>';
+      data.style = el.getAttribute('style') || '';
+      data.listType = list.tagName ? list.tagName.toLowerCase() : 'ul';
+      data.listStyleType = list.style ? list.style.listStyleType : '';
+      break;
+    }
+    case 'link': {
+      const a = el.querySelector('a') || el;
+      data.text = a.textContent || '';
+      data.href = a.getAttribute('href') || '#';
+      data.style = styleAttr;
+      break;
+    }
+    case 'button': {
+      const btn = el.querySelector('.b-btn') || el.querySelector('a') || el;
+      data.text = btn.textContent || 'Botón';
+      data.href = btn.getAttribute('href') || '#';
+      data.style = styleAttr;
+      const wrap = el.classList.contains('b-button-wrap') ? el : el.querySelector('.b-button-wrap');
+      data.align = (wrap && wrap.style.justifyContent) || 'flex-start';
+      break;
+    }
+    case 'file': {
+      const link = el.querySelector('a') || el;
+      const wrap = el.querySelector('.b-file') || el;
+      data.href = link.getAttribute('href') || '#';
+      data.text = link.textContent || 'Descargar archivo';
+      data.download = link.hasAttribute('download');
+      data.target = link.getAttribute('target') || null;
+      data.linkStyle = link.getAttribute('style') || '';
+      data.align = wrap.style.justifyContent || 'flex-start';
+      data.style = wrap.getAttribute('style') || '';
+      break;
+    }
+    case 'image': {
+      const img = el.querySelector('img') || el;
+      const wrap = el.querySelector('.b-image-wrap') || el;
+      data.src = img.getAttribute('src') || '';
+      data.alt = img.getAttribute('alt') || '';
+      data.style = img.getAttribute('style') || '';
+      data.align = (wrap && wrap.style.justifyContent) || 'flex-start';
+      break;
+    }
+    default:
+      break;
+  }
+
+  return data;
+}
+
+function detectBlockType(el) {
+  const tag = el.tagName?.toLowerCase();
+  const cls = el.className || '';
+  if (cls.includes('b-heading1') || tag === 'h1') return 'heading1';
+  if (cls.includes('b-heading2') || tag === 'h2') return 'heading2';
+  if (cls.includes('b-heading3') || tag === 'h3') return 'heading3';
+  if (cls.includes('b-paragraph') || tag === 'p') return 'paragraph';
+  if (cls.includes('b-quote') || tag === 'blockquote') return 'quote';
+  if (cls.includes('b-list') || tag === 'ul' || tag === 'ol') return 'list';
+  if (cls.includes('b-link')) return 'link';
+  if (cls.includes('b-file')) return 'file';
+  if (cls.includes('b-button-wrap')) return 'button';
+  if (cls.includes('b-divider') || tag === 'hr') return 'divider';
+  if (cls.includes('b-image') || tag === 'img') return 'image';
+  return 'paragraph';
+}
+
+/* ═══════════════════════════════════════════════════
+   SAVE
+═══════════════════════════════════════════════════ */
+async function savePage() {
+    const content = serializeToHTML();
+    const btn = document.querySelector('.btn-amber[onclick="savePage()"]');
+
+    if (btn) {
+        btn.textContent = 'Guardando...';
+        btn.disabled = true;
+        const spinner = document.getElementById('spinner');
+        if (spinner) spinner.classList.remove('hidden');
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+    try {
+        const res = await fetch(`/storages/${STORAGE_ID}/page`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dirPath: DIR_PATH,
+                filename: FILENAME,
+                content
+            }),
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || data.error || 'Error al guardar');
+
+        const correctDirPath  = data.data.dirPath;
+        const correctFilename = data.data.filename;
+
+        const pagina = await fetch('/paginas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ruta_pag: correctDirPath.replace(/\\/g, '/') ,
+                nombre_pag: correctFilename,
+                descripcion_pag: '',
+                fk_id_storage: STORAGE_ID
+            })
+        });
+
+        const dataPagina = await pagina.json();
+        if (!pagina.ok) throw new Error(dataPagina.error || 'Error al registrar página');
+        
+        Swal.fire({
+            title: 'Página guardada con éxito',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href =
+                    `/editor?storageId=${STORAGE_ID}` +
+                    `&dirPath=${correctDirPath.replace(/\\/g, '/')}` +
+                    `&filename=${correctFilename}`;
+            }
+        });
+
+    } catch (err) {
+        console.error('ERROR savePage:', err);
+        clearTimeout(timeoutId);
+
+        if (err.name === 'AbortError') {
+            toast('err', 'El servidor no respondió a tiempo. Intenta de nuevo.');
+        } else {
+            toast('err', err.message);
+        }
+
+    } finally {
+        clearTimeout(timeoutId);
+        if (btn) {
+            btn.textContent = '💾 Guardar';
+            btn.disabled = false;
+            const spinner = document.getElementById('spinner');
+            if (spinner) spinner.classList.add('hidden');
+        }
+    }
+}
+
+/* ═══════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════ */
+function typeLabel(t) {
+  return { heading1:'Título H1', heading2:'Título H2', heading3:'Título H3',
+    paragraph:'Párrafo', quote:'Cita', list:'Lista', link:'Enlace',
+    button:'Botón', divider:'Divisor', image:'Imagen', file:'Archivo' }[t] || t;
+}
+
+function rgbToHex(rgb) {
+  if (!rgb) return '#000000';
+  if (rgb.startsWith('#')) return rgb;
+  if (rgb === 'transparent') return '#ffffff';
+
+  const rgbaMatch = rgb.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)/);
+  if (rgbaMatch) {
+    const alpha = rgbaMatch[4] !== undefined ? parseFloat(rgbaMatch[4]) : 1;
+    if (alpha === 0) return '#ffffff';
+    const hex = [rgbaMatch[1], rgbaMatch[2], rgbaMatch[3]].map(n => {
+      const hexVal = parseInt(n).toString(16);
+      return hexVal.length === 1 ? '0' + hexVal : hexVal;
+    }).join('');
+    return '#' + hex;
+  }
+
+  return '#000000';
+}
+
+function toast(type, msg) {
+  const zone = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${msg}</span><button style="margin-left:auto;background:none;border:none;color:var(--txt2);cursor:pointer" onclick="this.parentElement.remove()">×</button>`;
+  zone.appendChild(el);
+  setTimeout(() => { el.style.animation='tOut .3s ease forwards'; setTimeout(()=>el.remove(),350); }, 4000);
+}
+</script>
+</body>
+</html>

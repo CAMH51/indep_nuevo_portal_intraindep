@@ -1,0 +1,84 @@
+<div class="shadow-lg p-4 bg-white p-4 rounded-xl bg-white h-[700px] overflow-hidden">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nuevo Evento o Aviso</p>
+    <div class="h-[600px] overflow-x-scroll">
+        <form id="formEvento">
+            <%- include('../../components/inputFile',{
+                formato:'.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt', 
+                id:'archivoEvento', 
+                name:'archivoEvento', 
+                titulo:'Archivo del Evento o Aviso'}) 
+            %>
+
+            <%- include('../../components/input',{
+                titulo:'Nombre del Evento o Aviso:', 
+                type:'text', 
+                id:'nombre_evento_aviso', 
+                name:'nombre_evento_aviso', 
+                placeholder:'Título del evento o aviso'}) 
+            %>
+
+            <%- include('../../components/textarea',{
+                titulo:'Descripción del evento o aviso:', 
+                id:'descripcion', 
+                name:'descripcion', 
+                placeholder:'Descripción del evento o aviso'}) 
+            %>
+
+            <%- include('../../components/btnGuardar',{
+                texto:'Guardar Evento o Aviso', 
+                type:'submit', 
+                id:'btnGuardarEvento'}) 
+            %>
+        </form>
+    </div>
+</div>
+<%- include('../../components/scriptValidator.ejs',{}) %>
+<script >
+
+    const validarEventos=[
+        {name:'archivoEvento', validate:'required|file_max:5|file_type:application/pdf,application/msword,application/vnd.ms-excel,application/vnd.ms-powerpoint, text/plain'},
+        {name:'nombre_evento_aviso', validate:'required'},
+    ];
+
+    const formEvento = document.getElementById('formEvento');
+
+    formEvento.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarEventos);
+
+        if(valid){
+            const formData = new FormData(formEvento);
+
+            const response =await fetch('/eventos_avisos?uploadPath=/home/eventos_avisos&fieldName=archivoEvento',{
+                method: 'POST',
+                body: formData
+            }); 
+
+            const data = await response.json();
+
+            if(response.ok){
+                refrescarTabla('#tablaEvento')
+                    clearAllFiles();
+                    formEvento.reset();
+                    document.querySelectorAll('.msg').forEach(el => {
+                        el.className = 'msg';
+                        el.innerHTML = '';
+                    });
+
+                    // Remover clases de error/éxito de todos los campos
+                    document.querySelectorAll('.field').forEach(el => {
+                        el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+                    });
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registro agregado con éxito",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+            }
+        }
+
+    })
+
+</script>

@@ -1,0 +1,153 @@
+
+    <label class="text-1xl font-bold text-amarillo-oscuro p-2" for=""><%=titulo%></label>
+    <div class="field">
+    <div class="w-full">
+        <!-- Componente de input file moderno -->
+            
+            <!-- Input oculto -->
+                 <input type="file" id="<%=id%>" name="<%=name%>" accept="<%=formato%>" class="hidden" multiple>
+                 
+                 <!-- Área de dropzoneEdit -->
+                 <div id="dropzoneEdit" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-blue-50 group">
+                     <div class="flex flex-col items-center space-y-3">          
+                         <!-- Texto -->
+                         <div>
+                             <p class="text-gray-600 font-medium">Arrastra y suelta tu archivo aquí</p>
+                             <p class="text-gray-400 text-sm mt-1">o</p>
+                             <button type="button" id="selectFileBtnEditEdit" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm font-medium shadow-sm hover:shadow">
+                                 Seleccionar archivo
+                                </button>
+                            </div>
+                            
+                            <p class="text-gray-400 text-xs mt-3">FORMATOS PERMITIDOS:<%=formato%></p>
+                </div>
+            </div>
+            
+            <!-- Lista de archivos seleccionados -->
+            <div id="fileListEdit" class="mt-6 space-y-2 hidden">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Archivos seleccionados:</h3>
+                <div id="filesContainerEdit" class="space-y-2 max-h-48 overflow-y-auto"></div>
+            </div>
+            
+            <!-- Botón de acción -->
+            <div id="actionButtonsEdit" class="mt-6 hidden">
+                <button type="button" id="clearFilesBtnEdit" class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm font-medium">
+                    Limpiar todo
+                </button>
+            </div>
+        </div>
+        <p class="msg"></p>
+    </div>
+        
+    <script >
+
+        const fileInputEdit = document.getElementById('<%=id%>');
+        const dropzoneEdit = document.getElementById('dropzoneEdit');
+        const selectFileBtnEdit = document.getElementById('selectFileBtnEdit');
+        const fileListDivEdit = document.getElementById('fileListEdit');
+        const filesContainerEdit = document.getElementById('filesContainerEdit');
+        const actionButtonsEdit = document.getElementById('actionButtonsEdit');
+        const clearFilesBtnEdit = document.getElementById('clearFilesBtnEdit');
+        
+        let selectedFilesEdit = [];
+        
+        // Función para actualizar la lista de archivos
+        function updateFileListEdit() {
+            if (selectedFilesEdit.length > 0) {
+                fileListDivEdit.classList.remove('hidden');
+                actionButtonsEdit.classList.remove('hidden');
+                
+                filesContainerEdit.innerHTML = '';
+                selectedFilesEdit.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'flex items-center justify-between bg-gray-50 rounded-lg p-3 group hover:bg-gray-100 transition-colors';
+                    
+                    const fileIcon = file.type.startsWith('image/') ? 'fa-image' : 
+                                    file.type === 'application/pdf' ? 'fa-file-pdf' : 'fa-file';
+                    
+                    const fileSize = (file.size / 1024).toFixed(1);
+                    
+                    fileItem.innerHTML = `
+                        <div class="flex items-center space-x-3 flex-1">
+                            <i class="fas ${fileIcon} text-gray-500"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-700 truncate">${file.name}</p>
+                                <p class="text-xs text-gray-400">${fileSize} KB</p>
+                            </div>
+                        </div>
+                        <button onclick="removeFile(${index})" class="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    filesContainerEdit.appendChild(fileItem);
+                });
+            } else {
+                fileListDivEdit.classList.add('hidden');
+                actionButtonsEdit.classList.add('hidden');
+            }
+        }
+        
+        // Función para eliminar archivo
+        window.removeFile = function(index) {
+            selectedFilesEdit.splice(index, 1);
+            updateFileListEdit();
+            
+            // Actualizar el input file
+            const dt = new DataTransfer();
+            selectedFilesEdit.forEach(file => dt.items.add(file));
+            fileInputEdit.files = dt.files;
+        }
+        
+        // Función para limpiar todo
+        function clearAllFilesEdit() {
+            selectedFilesEdit = [];
+            fileInputEdit.value = '';
+            updateFileListEdit();
+        }
+        
+        // Evento para seleccionar archivos
+        selectFileBtnEditEdit.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInputEdit.click();
+        });
+        
+        dropzoneEdit.addEventListener('click', () => {
+            fileInputEdit.click();
+        });
+        
+        fileInputEdit.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            selectedFilesEdit = [...selectedFilesEdit, ...files];
+            updateFileListEdit();
+        });
+        
+        // Drag and drop events
+        dropzoneEdit.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzoneEdit.classList.add('border-blue-500', 'bg-blue-50');
+        });
+        
+        dropzoneEdit.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropzoneEdit.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+        
+        dropzoneEdit.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzoneEdit.classList.remove('border-blue-500', 'bg-blue-50');
+            
+            const files = Array.from(e.dataTransfer.files);
+            selectedFilesEdit = [...selectedFilesEdit, ...files];
+            updateFileListEdit();
+            
+            // Actualizar el input file
+            const dt = new DataTransfer();
+            selectedFilesEdit.forEach(file => dt.items.add(file));
+            fileInputEdit.files = dt.files;
+        });
+        
+        clearFilesBtnEdit.addEventListener('click', clearAllFilesEdit);
+    </script>
+
+

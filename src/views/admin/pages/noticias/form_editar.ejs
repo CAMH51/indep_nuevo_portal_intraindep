@@ -1,0 +1,108 @@
+<form id="formEditarNoticia">
+<%- include('../../components/inputId',{
+    titulo:'Id Noticia:', 
+    type:'text', 
+    id:'id_noticia', 
+    name:'id_noticia', 
+    placeholder:''}) 
+%>
+<%- include('../../components/badge',{ 
+    titulo:'Imagen Actual',
+    bg:'bg-cyan-600',
+    mensaje:'',
+    id:'badgeNoticia'}) 
+%>
+<%- include('../../components/inputFileEdit',{
+    formato:'JPG, PNG, GIF', 
+    id:'imgEditNoticias', 
+    name:'imgEditNoticias', 
+    titulo:'Cambiar Imagen Noticia',
+}) 
+%>
+<%- include('../../components/input',{
+    titulo:'Titulo de la Noticia:', 
+    type:'text', 
+    id:'editTitulo', 
+    name:'editTitulo', 
+    placeholder:'Título de la noticia'}) 
+%>
+<%- include('../../components/textarea',{
+    titulo:'Descripción de la Noticia:', 
+    id:'editDescripcion', 
+    name:'editDescripcion', 
+    placeholder:'Descripción de la noticia'}) 
+%>
+<%- include('../../components/select',{
+    titulo:'Etiquetas:',
+    texto:'Seleccione una etiqueta:' ,
+    id:'editEtiqueta', 
+    name:'editEtiqueta',
+    opciones:etiquetas, 
+    opcionId:'id_etiqueta',
+    opcionNombre:'etiqueta'}) 
+%>
+<%- include('../../components/select',{
+    titulo:'Asociar una página a la noticia (opcional):',
+    texto:'Seleccione una página:', 
+    id:'editPagina',
+    name:'editPagina',
+    opciones:paginas, 
+    opcionId:'id_pagina',
+    opcionNombre:'nombre_pag'}) 
+%>
+<%- include('../../components/input',{
+    titulo:'URL externa (opcional):', 
+    type:'text', 
+    id:'editUrlExterna', 
+    name:'editUrlExterna', 
+    placeholder:'URL Externa'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Noticia', 
+    type:'submit', 
+    id:'btnEditarNoticia'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditNoticias=[
+        {name:'imgEditNoticias', validate:'file_max:5|file_type:image/png,image/jpeg,image/webp'},
+        {name:'editTitulo', validate:'required'},
+        {name:'editDescripcion', validate:'required'},
+        {name:'editEtiqueta', validate:'required'}
+    ];
+
+        const formEditarNoticia = document.getElementById('formEditarNoticia');
+
+        formEditarNoticia.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditNoticias);
+            
+        if(valid){  
+            const id = document.getElementById('id_noticia').value;
+            const formData = new FormData(formEditarNoticia);
+            const response = await fetch('/noticias/'+id + '?uploadPath=/home/noticias&fieldName=imgEditNoticias',{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaNoticia');
+                formEditarNoticia.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

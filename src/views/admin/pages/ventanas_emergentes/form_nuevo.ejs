@@ -1,0 +1,102 @@
+<div class="shadow-lg p-4 bg-white  p-4 rounded-xl bg-white h-[700px] overflow-hidden">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nueva Ventana Emergente</p>
+    <div class="h-[600px] overflow-x-scroll">
+        <form id="formVentana">
+            <%- include('../../components/inputFile',{
+                formato:'JPG, PNG, GIF', 
+                id:'archivoVentana', 
+                name:'archivoVentana', 
+                titulo:'Archivo Ventana Emergente'}) 
+            %>
+
+            <%- include('../../components/input',{
+                titulo:'Titulo de la Ventana Emergente:', 
+                type:'text', 
+                id:'titulo', 
+                name:'titulo', 
+                placeholder:'Titulo de la Ventana Emergente'}) 
+            %>
+
+            <%- include('../../components/textarea',{
+                titulo:'Descripción de la ventana emergente:', 
+                id:'descripcion', 
+                name:'descripcion', 
+                placeholder:'Descripción de la ventana emergente'}) 
+            %>
+
+            <%- include('../../components/input',{
+                titulo:'Fecha de Inicio:', 
+                type:'date', 
+                id:'f_inicio', 
+                name:'f_inicio', 
+                placeholder:'Fecha de Inicio'}) 
+            %>
+
+            <%- include('../../components/input',{
+                titulo:'Fecha de Termino:', 
+                type:'date', 
+                id:'f_termino', 
+                name:'f_termino', 
+                placeholder:'Fecha de Termino'}) 
+            %>
+
+            <%- include('../../components/btnGuardar',{
+                texto:'Guardar Ventana Emergente', 
+                type:'submit', 
+                id:'btnGuardarVentana'}) 
+            %>
+        </form>
+    </div>
+</div>
+<%- include('../../components/scriptValidator.ejs',{}) %>
+<script >
+
+    const validarVentanas=[
+        {name:'archivoVentana', validate:'required|file_max:5|file_type:image/png,image/jpeg,image/webp,video/mp4,video/x-msvideo,.avi'},
+        {name:'titulo', validate:'required'},
+        {name:'f_inicio', validate:'required'},
+        {name:'f_termino', validate:'required'},
+    ];
+
+    const formVentana = document.getElementById('formVentana');
+
+    formVentana.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarVentanas);
+
+        if(valid){
+            const formData = new FormData(formVentana);
+
+            const response =await fetch('/ventanas_emergentes?uploadPath=/home/ventanas_emergentes&fieldName=archivoVentana',{
+                method: 'POST',
+                body: formData
+            }); 
+
+            const data = await response.json();
+
+            if(response.ok){
+                refrescarTabla('#tablaVentana')
+                    clearAllFiles();
+                    formVentana.reset();
+                    document.querySelectorAll('.msg').forEach(el => {
+                        el.className = 'msg';
+                        el.innerHTML = '';
+                    });
+
+                    // Remover clases de error/éxito de todos los campos
+                    document.querySelectorAll('.field').forEach(el => {
+                        el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+                    });
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registro agregado con éxito",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+            }
+        }
+
+    })
+
+</script>

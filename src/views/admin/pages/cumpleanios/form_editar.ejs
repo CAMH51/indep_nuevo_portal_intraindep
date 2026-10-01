@@ -1,0 +1,102 @@
+<form id="formEditarCumpleanio">
+<%- include('../../components/inputId',{
+    titulo:'Id Cumpleanios:', 
+    type:'text', 
+    id:'id_cumpleanio', 
+    name:'id_cumpleanio', 
+    placeholder:''}) 
+%>
+<%- include('../../components/badge',{ 
+    titulo:'Imagen Actual',
+    bg:'bg-cyan-600',
+    mensaje:'',
+    id:'badgeCumpleanio'}) 
+%>
+<%- include('../../components/inputFileEdit',{
+    formato:'JPG, PNG, GIF', 
+    id:'imgEditCumpleanio', 
+    name:'imgEditCumpleanio', 
+    titulo:'Cambiar Imagen Cumpleaños',
+}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Nombre:', 
+    type:'text', 
+    id:'editNombre', 
+    name:'editNombre', 
+    placeholder:'Nombre'}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Ap. Paterno:', 
+    type:'text', 
+    id:'editApPaterno', 
+    name:'editApPaterno', 
+    placeholder:'Apellido Paterno'}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Ap. Materno (Opcional):', 
+    type:'text', 
+    id:'editApMaterno', 
+    name:'editApMaterno', 
+    placeholder:'Apellido Materno'}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Fecha de Nacimiento:', 
+    type:'date', 
+    id:'editFNacimiento', 
+    name:'editFNacimiento', 
+    placeholder:'Fecha de Nacimiento'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Cumpleaños', 
+    type:'submit', 
+    id:'btnEditarCumpleanio'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditCumpleanio=[
+            {name:'imgEditCumpleanio', validate:'file_max:5|file_type:image/png,image/jpeg,image/webp'},
+            {name:'editNombre', validate:'required'},
+            {name:'editApPaterno', validate:'required'},
+            {name:'editFNacimiento', validate:'required'},
+        ];
+
+        const formEditarCumpleanio = document.getElementById('formEditarCumpleanio');
+
+        formEditarCumpleanio.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditCumpleanio);
+            
+        if(valid){  
+            const id = document.getElementById('id_cumpleanio').value;
+            const formData = new FormData(formEditarCumpleanio);
+            const response = await fetch('/cumpleanios/'+id + '?uploadPath=/home/cumpleanios&fieldName=imgEditCumpleanio',{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaCumpleanio');
+                formEditarCumpleanio.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

@@ -1,0 +1,81 @@
+<form id="formCompartirPagina"> 
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <%- include('../components/inputId.ejs',{
+                titulo:'Id Página:', 
+                type:'text', 
+                id:'id_pagina', 
+                name:'id_pagina', 
+                placeholder:''}) 
+            %>
+        </div>
+        <div>
+            <%- include('../components/inputId.ejs',{
+                titulo:'Id Usuario:', 
+                type:'text', 
+                id:'id_user', 
+                name:'id_user', 
+                placeholder:''}) 
+            %>
+        </div>
+    </div>
+
+    <%- include('../components/input',{
+        titulo:'Correo corporativo:', 
+        type:'text',
+        id:'usuario', 
+        name:'usuario', 
+        placeholder:'Escriba el correo corporativo'}) 
+    %>
+    <div id="msgCheck">
+
+    </div>
+
+    <%- include('../components/btnGuardar',{
+        texto:'Compartir Página', 
+        type:'submit', 
+        id:'btnCompartirPagina'}) 
+    %>
+</form>
+
+
+<script >
+    document.getElementById('usuario').addEventListener("change",async (e)=>{
+        const btnCompartirPagina = document.getElementById('btnCompartirPagina');
+        const msg = document.getElementById('msgCheck');
+        const id_user = document.getElementById('id_user');
+        const formData = new FormData();
+        formData.append('email',e.target.value);
+        const response = await fetch('/users/email',{
+            method:'POST',
+            body:formData
+        });
+        
+        const data = await response.json();
+        console.log(data);
+        if(data.success){
+            msg.innerHTML = `
+                <div class="flex justify-center gap-4 text-ms text-green-800 font-bold m-2">
+                    <svg class="w-6 h-6 text-green-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                    ${data.msg}
+                </div>
+            `;
+            id_user.value = data.data[0].id_user
+            btnCompartirPagina.disabled = false;
+        }else{
+            msg.innerHTML = `
+                <div class="flex justify-center gap-4 text-ms text-red-800 font-bold m-2">
+                    <svg class="w-6 h-6 text-red-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 9-6 6m0-6 6 6m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                    ${data.msg}
+                </div>
+            `;
+            id_user.value = "";
+            btnCompartirPagina.disabled = true;
+        }
+    })
+   
+</script>

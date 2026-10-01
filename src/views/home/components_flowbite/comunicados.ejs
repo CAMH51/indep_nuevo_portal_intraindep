@@ -1,0 +1,366 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<style>
+    /* Transiciones y efectos */
+    .tab-btn {
+        transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .tab-btn.active {
+        color: #7c3aed; /* purple-600 */
+        border-bottom-color: #7c3aed;
+        background: transparent;
+    }
+    .tab-btn.inactive {
+        color: #64748b; /* slate-500 */
+        border-bottom-color: transparent;
+    }
+    .tab-btn.inactive:hover {
+        color: #1e293b; /* slate-800 */
+        border-bottom-color: #cbd5e1; /* slate-300 */
+    }
+    .tab-panel {
+        animation: fadeTab 0.3s ease forwards;
+    }
+    @keyframes fadeTab {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    /* Efecto hover en imágenes */
+    .grid-img {
+        transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+    .grid-img:hover {
+        transform: scale(1.04);
+        box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.25);
+    }
+    /* Lightbox overlay */
+    .lightbox-overlay {
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: opacity 0.3s ease;
+    }
+    .lightbox-overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+    .lightbox-overlay:not(.hidden) {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .lightbox-img {
+        max-height: 80vh;
+        max-width: 90vw;
+        object-fit: contain;
+        border-radius: 1.25rem;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        transition: transform 0.2s ease;
+    }
+    .lightbox-btn {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: background 0.2s, transform 0.15s;
+    }
+    .lightbox-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: scale(1.08);
+    }
+    .close-btn {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        transition: background 0.2s, transform 0.2s;
+    }
+    .close-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(90deg);
+    }
+    /* Badge de pestaña activa */
+    .badge-tab {
+        background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    }
+    /* Scroll suave */
+    html {
+        scroll-behavior: smooth;
+    }
+</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased">
+<% if (comunicados.length == 0) { %>
+    <%- include('../components_flowbite/aviso_sin_registros.ejs', { titulo: 'No existen comunicados publicados.' }) %>
+<% } else { %>
+    <!-- ========== SECCIÓN COMUNICADOS ========== -->
+    <section class="max-w-7xl mx-auto ">
+
+        <!-- ===== TABS (estructura exacta que pediste) ===== -->
+        <div class="mb-6 border-b border-slate-200">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-styled-tab" role="tablist">
+                <!-- Los datos se generan dinámicamente con JS (simulando EJS) -->
+            </ul>
+        </div>
+
+        <!-- Contenido de las pestañas -->
+        <div id="default-styled-tab-content" class="mt-4">
+            <!-- Los paneles se generan dinámicamente con JS -->
+        </div>
+    </section>
+
+    <!-- ===== LIGHTBOX ===== -->
+    <div id="lightbox" class="lightbox-overlay hidden fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="relative flex flex-col items-center max-w-6xl w-full">
+            <img id="lightbox-img" class="lightbox-img w-auto h-auto rounded-2xl shadow-2xl" src="" alt="Comunicado ampliado" />
+
+            <button id="close-lightbox" class="close-btn absolute -top-4 -right-4 md:-top-6 md:-right-6 text-white text-2xl w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <button id="prev-btn" class="lightbox-btn absolute left-2 md:left-6 top-1/2 -translate-y-1/2 text-black text-2xl w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button id="next-btn" class="lightbox-btn absolute right-2 md:right-6 top-1/2 -translate-y-1/2 text-black text-2xl w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+
+            <div id="lightbox-counter" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/40 backdrop-blur-sm text-white text-sm font-medium px-5 py-2 rounded-full shadow-lg border border-white/10">
+                1 / 1
+            </div>
+        </div>
+    </div>
+<% } %>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+    (function() {
+        // ------------------------------------------------------------
+        // 1. DATOS DE EJEMPLO (simulan la variable 'comunicados' del EJS)
+        // ------------------------------------------------------------
+        const comunicados = <%- JSON.stringify(comunicados) %>;
+
+        // ------------------------------------------------------------
+        // 2. FUNCIÓN PARA GENERAR TABS Y PANELES
+        // ------------------------------------------------------------
+        const tabList = document.getElementById('default-styled-tab');
+        const tabContent = document.getElementById('default-styled-tab-content');
+
+        // Construimos la lista de pestañas
+        comunicados.forEach((comunicado, index) => {
+            const li = document.createElement('li');
+            li.className = 'me-2';
+            li.setAttribute('role', 'presentation');
+
+            const button = document.createElement('button');
+            button.className =
+                `tab-btn inline-block p-4 border-b-2 rounded-t-base ${index === 0 ? 'active' : 'inactive'}`;
+            button.id = `${comunicado.siglas}-styled-tab`;
+            button.setAttribute('data-tabs-target', `#styled-${comunicado.siglas}`);
+            button.setAttribute('type', 'button');
+            button.setAttribute('role', 'tab');
+            button.setAttribute('aria-controls', comunicado.siglas);
+            button.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
+            button.textContent = comunicado.titulo;
+
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                switchTab(comunicado.siglas);
+            });
+
+            li.appendChild(button);
+            tabList.appendChild(li);
+        });
+
+        // Construimos los paneles de contenido
+        comunicados.forEach((comunicado, index) => {
+            const panel = document.createElement('div');
+            panel.className = `tab-panel ${index === 0 ? '' : 'hidden'} p-4 rounded-xl bg-white/70 backdrop-blur-sm border border-slate-200/60 shadow-sm`;
+            panel.id = `styled-${comunicado.siglas}`;
+            panel.setAttribute('role', 'tabpanel');
+            panel.setAttribute('aria-labelledby', `${comunicado.siglas}-styled-tab`);
+
+            // Grid de imágenes
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-1 sm:grid-cols-1 md:grid-cols-4 gap-4';
+
+            // Recorremos las imágenes de este comunicado
+            comunicado.comunicados.forEach((item) => {
+                const container = document.createElement('div');
+                container.className = 'flex flex-col items-center';
+
+                const img = document.createElement('img');
+                const id = item.archivo.nombre_archivo;
+                img.src = `/imagenes/home/comunicados/${id}`;
+                img.alt = `Comunicado ${id}`;
+                img.className = 'grid-img rounded-2xl w-full h-[200px] sm:h-[250px] md:h-[300px] object-cover shadow-md border border-slate-200/50';
+                img.loading = 'lazy';
+
+                // --- Al hacer clic, abrimos lightbox con la imagen actual ---
+                img.addEventListener('click', function() {
+                    // Obtenemos todas las imágenes visibles en el panel activo
+                    const visibleImages = getVisibleImages();
+                    // Buscamos el índice de esta imagen en esa lista
+                    const idx = visibleImages.findIndex(src => src === this.src);
+                    if (idx !== -1) {
+                        openLightbox(idx);
+                    }
+                });
+
+                // --- Fecha formateada ---
+                const p = document.createElement('p');
+                const fechaStr = item.f_modificacion;
+                const dateObj = new Date(fechaStr);
+                if (!isNaN(dateObj)) {
+                    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+                    ];
+                    const dia = dateObj.getDate();
+                    const mes = meses[dateObj.getMonth()];
+                    const anio = dateObj.getFullYear();
+                    p.textContent = `${dia} de ${mes} del ${anio}`;
+                } else {
+                    p.textContent = fechaStr;
+                }
+                p.className = 'text-sm text-slate-700 font-medium text-center mt-1';
+
+                container.appendChild(img);
+                container.appendChild(p);
+                grid.appendChild(container);
+            });
+
+            panel.appendChild(grid);
+            tabContent.appendChild(panel);
+        });
+
+        // ------------------------------------------------------------
+        // 3. FUNCIÓN PARA CAMBIAR DE PESTAÑA (cierra lightbox al cambiar)
+        // ------------------------------------------------------------
+        function switchTab(siglas) {
+            // Cerrar lightbox si está abierto
+            closeLightbox();
+
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+            const targetPanel = document.getElementById(`styled-${siglas}`);
+            if (targetPanel) targetPanel.classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'inactive');
+                btn.classList.add('inactive');
+                btn.setAttribute('aria-selected', 'false');
+                btn.style.color = '';
+                btn.style.borderBottomColor = '';
+            });
+
+            const activeBtn = document.getElementById(`${siglas}-styled-tab`);
+            if (activeBtn) {
+                activeBtn.classList.remove('inactive');
+                activeBtn.classList.add('active');
+                activeBtn.setAttribute('aria-selected', 'true');
+            }
+        }
+
+        // ------------------------------------------------------------
+        // 4. LIGHTBOX - FUNCIONES MEJORADAS (trabaja con imágenes visibles)
+        // ------------------------------------------------------------
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const closeBtn = document.getElementById('close-lightbox');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const counter = document.getElementById('lightbox-counter');
+
+        let currentIndex = 0;
+
+        // --- Obtiene solo las imágenes visibles actualmente (en el panel activo) ---
+        function getVisibleImages() {
+            // Seleccionamos el panel que no tiene la clase 'hidden'
+            const activePanel = document.querySelector('.tab-panel:not(.hidden)');
+            if (!activePanel) return [];
+            // Buscamos todas las imágenes dentro de ese panel
+            const imgs = activePanel.querySelectorAll('.grid-img');
+            return Array.from(imgs).map(img => img.src);
+        }
+
+        // --- Abrir lightbox con un índice dentro de las imágenes visibles ---
+        function openLightbox(index) {
+            const visible = getVisibleImages();
+            if (index < 0 || index >= visible.length) return;
+            currentIndex = index;
+            updateLightbox(visible);
+            lightbox.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // --- Actualizar la imagen y el contador usando la lista proporcionada ---
+        function updateLightbox(images) {
+            if (!images) images = getVisibleImages();
+            if (currentIndex < 0 || currentIndex >= images.length) return;
+            lightboxImg.src = images[currentIndex];
+            lightboxImg.alt = `Comunicado ${currentIndex + 1}`;
+            counter.textContent = `${currentIndex + 1} / ${images.length}`;
+        }
+
+        // --- Cerrar lightbox ---
+        function closeLightbox() {
+            lightbox.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // --- Navegación (usando siempre la lista actual) ---
+        function prevImage() {
+            const visible = getVisibleImages();
+            if (visible.length === 0) return;
+            currentIndex = (currentIndex - 1 + visible.length) % visible.length;
+            updateLightbox(visible);
+        }
+
+        function nextImage() {
+            const visible = getVisibleImages();
+            if (visible.length === 0) return;
+            currentIndex = (currentIndex + 1) % visible.length;
+            updateLightbox(visible);
+        }
+
+        // --- Eventos ---
+        closeBtn.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', function(e) {
+            if (e.target === lightbox) closeLightbox();
+        });
+        prevBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            prevImage();
+        });
+        nextBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            nextImage();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (!lightbox.classList.contains('hidden')) {
+                if (e.key === 'Escape') closeLightbox();
+                else if (e.key === 'ArrowLeft') { prevImage();
+                    e.preventDefault(); } 
+                else if (e.key === 'ArrowRight') { nextImage();
+                    e.preventDefault(); }
+            }
+        });
+
+        lightboxImg.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Exponer funciones para depuración (opcional)
+        window.openLightbox = openLightbox;
+        window.closeLightbox = closeLightbox;
+
+        // --- Asegurar que al cambiar de pestaña se cierre el lightbox (ya está en switchTab) ---
+
+    })();
+</script>

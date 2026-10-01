@@ -1,0 +1,68 @@
+<div class="shadow-lg p-4 bg-white p-4 rounded-xl bg-white">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nuevo Apartado</p>
+    <form id="formApartado">
+        <%- include('../../../components/input',{
+            titulo:'Nombre del apartado:', 
+            type:'text', 
+            id:'apartado', 
+            name:'apartado', 
+            placeholder:'Título del apartado'}) 
+        %>
+
+        <%- include('../../../components/textarea',{
+            titulo:'Descripción:', 
+            id:'descripcion', 
+            name:'descripcion', 
+            placeholder:'Descripción'}) 
+        %>
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Apartado', 
+            type:'submit', 
+            id:'btnGuardarApartado'}) 
+        %>
+    </form>
+</div>
+
+<%- include('../../../components/scriptValidator.ejs',{}) %>
+
+<script >
+
+    const validarApartado =[
+        {name:'apartado', validate:'required|min:5'}
+    ];
+
+    const formApartado = document.getElementById('formApartado');
+
+    formApartado.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarApartado);
+        
+        if(valid){
+            
+            const formData = new FormData(formApartado);
+    
+            const response =await fetch('/apartados',{
+                method: 'POST',
+                body: formData
+            }); 
+    
+            const data = await response.json();
+    
+            if(data.success){
+                // Si solo quieres recargar los datos actuales
+                refrescarTabla('#tablaApartados')
+                formApartado.reset();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro agregado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+
+    });
+
+</script>

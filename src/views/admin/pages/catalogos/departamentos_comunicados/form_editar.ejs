@@ -1,0 +1,74 @@
+
+    <form id="formEditarDepartamento">
+        <%- include('../../../components/inputId',{
+            titulo:'Id Departamento:', 
+            type:'text', 
+            id:'id_departamento_comunicado', 
+            name:'id_departamento_comunicado', 
+            placeholder:''}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Titulo del departamento:', 
+            type:'text', 
+            id:'editTitulo', 
+            name:'editTitulo', 
+            placeholder:'Título del departamento'}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Siglas del departamento:', 
+            type:'text', 
+            id:'editSiglas', 
+            name:'editSiglas', 
+            placeholder:'Siglas del departamento'}) 
+        %>
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Departamento', 
+            type:'submit', 
+            id:'btnEditarDepartamento'}) 
+        %>
+    </form>
+
+    <script >
+
+         document.getElementById('id_departamento_comunicado').readOnly = true;
+
+        const validarEditDepartamento =[
+            {name:'editTitulo', validate:'required'},
+            {name:'editSiglas', validate:'required'},
+        ];
+
+        const formEditarDepartamento = document.getElementById('formEditarDepartamento');
+
+        formEditarDepartamento.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditDepartamento);
+            
+        if(valid){  
+            const id = document.getElementById('id_departamento_comunicado').value;
+            const formData = new FormData(formEditarDepartamento);
+            const response = await fetch('/departamentos/'+id,{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaDepartamentos');
+                formEditarDepartamento.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

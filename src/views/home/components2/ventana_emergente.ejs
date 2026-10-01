@@ -1,0 +1,22 @@
+
+<%- include('../../admin/components/ventanaEmergente.ejs',{}) %>
+<script >
+    const ventana = <%-  JSON.stringify(ventanasEmergentes) %>;
+
+    if(ventana.length > 0){
+        function cambiarContenido(type, url) {
+            multimediaConfig.type = type;
+            multimediaConfig.url = url;
+            openModal();
+        }
+
+        if(ventana[0].archivo.ext_archivo === 'mp4'){
+            cambiarContenido('video',`${'/imagenes/home/ventanas_emergentes/'+ventana[0].archivo.nombre_archivo}`);
+
+        }else{
+            cambiarContenido('image',`${'/imagenes/home/ventanas_emergentes/'+ventana[0].archivo.nombre_archivo}`);
+        }
+
+        //cambiarContenido('video','https://www.w3schools.com/html/mov_bbb.mp4');
+    }
+</script>

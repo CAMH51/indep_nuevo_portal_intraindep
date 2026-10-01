@@ -1,0 +1,47 @@
+ <style>
+     /* Barra lateral de enlaces externos (vertical derecha fija) */
+        .external-links-vertical {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            padding: 12px 8px;
+            border-radius: 32px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+        .external-links-vertical a {
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 30px;
+            background: white;
+            color: #1f2937;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            font-size: 1.3rem;
+            text-decoration: none;
+        }
+        .external-links-vertical a:hover {
+            transform: scale(1.08);
+            background: #2563eb;
+            color: white;
+        }
+ </style>
+ 
+ <!-- ENLACES EXTERNOS VERTICALES LADO DERECHO -->
+    <div class="external-links-vertical">
+        <div class="flex justify-between items-center mb-5"><h2 class="text-2xl font-bold border-l-4 border-blue-600 pl-3">Enlaces Externos</h2></div>
+        <a class="w-32 h-12" href="https://www.google.com" target="_blank" title="Google"><i class="fab fa-google"></i></a>
+        <a class="w-32 h-12" href="https://github.com" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+        <a class="w-32 h-12" href="https://es.wikipedia.org" target="_blank" title="Wikipedia"><i class="fab fa-wikipedia-w"></i></a>
+        <a class="w-32 h-12" href="https://www.microsoft.com" target="_blank" title="Microsoft"><i class="fab fa-microsoft"></i></a>
+        <a class="w-32 h-12" href="https://www.spotify.com" target="_blank" title="Spotify"><i class="fab fa-spotify"></i></a>
+    </div>

@@ -1,0 +1,87 @@
+<div class="shadow-lg p-4 bg-white p-4 rounded-xl bg-white h-[700px] overflow-hidden">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nueva Liga</p>
+    <div class="h-[600px] overflow-x-scroll">
+        <form id="formLiga">
+
+            <%- include('../../components/input',{
+                titulo:'Nombre de la liga:', 
+                type:'text', 
+                id:'nombre_liga', 
+                name:'nombre_liga', 
+                placeholder:'Nombre de la liga'}) 
+            %>
+
+            <%- include('../../components/input',{
+                titulo:'URL de la liga:', 
+                type:'text', 
+                id:'url_liga', 
+                name:'url_liga', 
+                placeholder:'URL de la liga'}) 
+            %>
+
+            <%- include('../../components/select',{
+                titulo:'Asociar una página a la Liga (opcional):',
+                texto:'Seleccione una página:', 
+                id:'pagina',
+                name:'pagina',
+                opciones:paginas, 
+                opcionId:'id_pagina',
+                opcionNombre:'nombre_pag'}) 
+            %>
+
+            <%- include('../../components/btnGuardar',{
+                texto:'Guardar Liga', 
+                type:'submit', 
+                id:'btnGuardarLiga'}) 
+            %>
+        </form>
+    </div>
+</div>
+<%- include('../../components/scriptValidator.ejs',{}) %>
+<script >
+
+    const validarLigas=[
+        {name:'nombre_liga', validate:'required'},
+    ];
+
+    const formLiga = document.getElementById('formLiga');
+
+    formLiga.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarLigas);
+
+        if(valid){
+            const formData = new FormData(formLiga);
+
+            const response =await fetch('/ligas',{
+                method: 'POST',
+                body: formData
+            }); 
+
+            const data = await response.json();
+
+            if(response.ok){
+                refrescarTabla('#tablaLiga')
+                    formLiga.reset();
+                    document.querySelectorAll('.msg').forEach(el => {
+                        el.className = 'msg';
+                        el.innerHTML = '';
+                    });
+
+                    // Remover clases de error/éxito de todos los campos
+                    document.querySelectorAll('.field').forEach(el => {
+                        el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+                    });
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registro agregado con éxito",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+            }
+        }
+
+    })
+
+</script>

@@ -1,0 +1,37 @@
+     <section class="w-full p-2" id="noticias">
+       
+       <%if(noticias.length == 0){%>
+        <%- include('../components2/titulo.ejs',{titulo:"Noticias INDEP"}) %>
+          <div class="bg-white-card text-center text-muted py-4 mb-4" style="font-size:.87rem;">
+            <i class="bi bi-emoji-smile" style="font-size:2.5rem;color:#ccc;"></i>
+            <p class="mt-2 mb-0">No hay Noticias Publicadas.</p>
+          </div>
+        <%}else{%>
+
+          <%- include('../components2/titulo.ejs',{titulo:"Noticias INDEP"}) %>
+          <div class="swiper noticiasSwiper">
+              <div class="swiper-wrapper">
+                <% for(noticia of noticias){%> 
+                  <div class="swiper-slide ">
+                    <div class="bg-white rounded-2xl shadow-md overflow-hidden w-[100%] h-[450px] mb-4">
+                      <img src="/imagenes/home/noticias/<%=noticia.archivo.nombre_archivo%>" class="w-full h-44 object-cover">
+                      <div class="p-4">
+                        <span class="text-rojo-claro rounded-xl bg-amarillo-claro p-1 text-xs font-semibold"><%=noticia.etiqueta.etiqueta%></span>
+                        <h3 class="font-bold text-lg line-clamp-3"><%=noticia.titulo%></h3>
+                        <p class="text-gray-600 text-sm text-justify line-clamp-3"><%=noticia.descripcion%></p>
+                        <a href="<%= noticia.url_pagina !== null ? noticia.url_pagina :  noticia.pagina !== null ?'/'+ noticia.pagina.ruta_pag + '/' + noticia.pagina.nombre_pag : '#' %>" class="no-underline font-bold text-sm text-rojo-oscuro">Ver Más....</a>
+                      </div>
+                    </div>
+                  </div>
+                  <%}%>
+              
+              </div>
+              <div class="swiper-pagination-noticias mt-3"></div>
+          </div>
+        <%}%>
+</section>
+
+
+<script>
+    const noticiasSwiper = new Swiper('.noticiasSwiper', { slidesPerView: 1, spaceBetween: 20, loop: true, autoplay: { delay: 5000 }, pagination: { el: '.swiper-pagination-noticias', clickable: true }, navigation: { nextEl: '.swiper-noticias-button-next', prevEl: '.swiper-noticias-button-prev' }, breakpoints: { 640: { slidesPerView: 2 }, 1024: { slidesPerView: 3 }  } });
+</script>

@@ -1,0 +1,100 @@
+<form id="formEditarServicio">
+<%- include('../../components/inputId',{
+    titulo:'Id Servicio o Promoción:', 
+    type:'text', 
+    id:'id_servicio_promocion', 
+    name:'id_servicio_promocion', 
+    placeholder:''}) 
+%>
+<%- include('../../components/badge',{ 
+    titulo:'Archivo Actual',
+    bg:'bg-cyan-600',
+    mensaje:'',
+    id:'badgeServicio'}) 
+%>
+<%- include('../../components/inputFileEdit',{
+    formato:'image/png,image/jpeg,image/webp', 
+    id:'imgEditServicio', 
+    name:'imgEditServicio', 
+    titulo:'Cambiar Imagen del Servicio o Promoción',
+}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Titulo del Servicio o Promoción:', 
+    type:'text', 
+    id:'editTitulo', 
+    name:'editTitulo', 
+    placeholder:'Título del servicio o promoción'}) 
+%>
+
+<%- include('../../components/textarea',{
+    titulo:'Descripción del servicio o promoción:', 
+    id:'editDescripcion', 
+    name:'editDescripcion', 
+    placeholder:'Descripción del servicio o promoción'}) 
+%>
+
+<%- include('../../components/select',{
+    titulo:'Asociar una página al Servicio o Promoción (opcional):',
+    texto:'Seleccione una página:', 
+    id:'editPagina',
+    name:'editPagina',
+    opciones:paginas, 
+    opcionId:'id_pagina',
+    opcionNombre:'nombre_pag'}) 
+%>
+<%- include('../../components/input',{
+    titulo:'URL externa (opcional):', 
+    type:'text', 
+    id:'editUrlExterna', 
+    name:'editUrlExterna', 
+    placeholder:'URL Externa'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Servicio o Promoción', 
+    type:'submit', 
+    id:'btnEditarServicio'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditServicios=[
+            {name:'imgEditServicio', validate:'file_max:5|file_type:image/png,image/jpeg,image/webp'},
+            {name:'editTitulo', validate:'required'},
+        ];
+
+        const formEditarServicio = document.getElementById('formEditarServicio');
+
+        formEditarServicio.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditServicios);
+            
+        if(valid){  
+            const id = document.getElementById('id_servicio_promocion').value;
+            const formData = new FormData(formEditarServicio);
+            const response = await fetch('/servicios_promociones/'+id + '?uploadPath=/home/servicios_promociones&fieldName=imgEditServicio',{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaServicio');
+                formEditarServicio.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

@@ -1,0 +1,35 @@
+<%if(subastas.length == 0){%>
+    <%- include('../components_flowbite/aviso_sin_registros.ejs',{titulo:'No existen subastas publicadas.'}) %>
+  <%}else{%>
+
+<% subastas.forEach(item =>{ %>
+
+<% 
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // normalizamos a medianoche local
+
+    // Parseamos manualmente para evitar el problema de UTC
+    const [anio, mes, dia] = item.envivo_f_inicio.split('-');
+    const fechaInicio = new Date(anio, mes - 1, dia); // mes - 1 porque en JS enero es 0
+%>
+
+<div class="bg-neutral-primary-soft block max-w-sm border border-default rounded-base shadow-xs">
+    <a href="#">
+        <img class="rounded-t-base" src="/imagenes/home/subastas/<%=item.archivo.nombre_archivo%>" alt="" />
+    </a>
+    <div class="p-6 text-center">
+        <p class="text-xl font-semibold"><%= item.titulo %></p>
+        <p class="text-ms">Evento en vivo</p>
+
+        <% if (fechaInicio > hoy) { %>
+            <span class="text-yellow-600">Próximamente</span>
+        <% } else if (fechaInicio.getTime() === hoy.getTime()) { %>
+            <a href="<%= item.envivo_url %>">
+                <h5 class="mt-3 mb-6 text-md font-semibold tracking-tight text-heading hover:underline">Ir al evento en vivo</h5>
+            </a>
+        <% } %>
+    </div>
+</div>
+
+<%});%>
+<%}%>

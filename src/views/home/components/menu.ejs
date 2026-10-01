@@ -1,0 +1,311 @@
+<style>
+    /* 
+      IMPORTANTE: Para que el menú NO afecte a los elementos fuera de él,
+      utilizamos un contenedor independiente que NO modifica el layout externo.
+      El panel se posiciona de manera absoluta respecto a su contenedor relativo,
+      así el contenido externo no se mueve/empuja al abrir/cerrar.
+      El menú "flota" sobre el resto del contenido sin desplazar nada.
+    */
+    .menu-dropdown-container {
+      position: relative;
+      display: inline-block;
+    }
+    
+    /* Panel flotante absoluto: No afecta flujo del documento, no mueve otros elementos */
+    .menu-absolute-panel {
+      position: absolute;
+      top: calc(100% + 0.75rem);  /* separación del botón */
+      right: 0;
+      left: auto;
+      width: min(92vw, 480px);    /* ancho adaptable: en móvil casi pantalla completa, desktop fijo */
+      background: white;
+      border-radius: 1.25rem;
+      box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.02);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-12px) scale(0.96);
+      transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      z-index: 9999;
+      backdrop-filter: blur(0px);
+      max-height: 85vh;
+      overflow-y: auto;
+      pointer-events: none;       /* mientras está oculto no bloquea clicks */
+    }
+    
+    /* Panel abierto: visible y con interacción */
+    .menu-absolute-panel.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    
+    /* Scroll personalizado dentro del menú para mejor UX */
+    .menu-absolute-panel::-webkit-scrollbar {
+      width: 5px;
+    }
+    .menu-absolute-panel::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+    .menu-absolute-panel::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    
+    /* Ajustes responsivos: en móvil el menú ocupará casi todo el ancho y se alinea a la derecha/inteligente */
+    @media (max-width: 640px) {
+      .menu-absolute-panel {
+        width: calc(100vw - 2rem);
+        left: 1rem;
+        right: 1rem;
+        top: calc(100% + 0.5rem);
+        max-height: 75vh;
+      }
+    }
+    
+    /* Transiciones suaves para elementos internos */
+    .nav-item-hover {
+      transition: background 0.15s, padding-left 0.1s;
+    }
+    .nav-item-hover:hover {
+      background-color: #f8fafc;
+      padding-left: 0.5rem;
+    }
+    
+    /* Fondo sutil overlay opcional? No para que no afecte elementos externos pero usamos solo panel flotante */
+    body {
+      background: linear-gradient(145deg, #f1f5f9 0%, #e6edf7 100%);
+      min-height: 100vh;
+    }
+    
+    /* Aseguramos que el contenedor del botón y el menú no afecten el layout general */
+    header, main {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Botón sin efectos de desplazamiento colateral */
+    #menuToggleBtn {
+      transition: all 0.2s;
+    }
+    
+    /* El contenido externo permanece estático, el menú no lo empuja */
+  </style>
+ <!-- Contenedor principal, layout normal sin verse afectado por el menú -->
+  <header class="bg-rojo-oscuro shadow-md sticky top-0 z-30">
+    <!-- Header con logo + controles: usando flex row, el menú desplegable está en un contenedor absoluto relativo a su padre -->
+    <div class="bg-rojo-oscuro backdrop-blur-sm shadow-md border border-gray-200/70 p-4 flex flex-wrap items-center justify-between gap-3">
+      <!-- Logo / marca -->
+      <div class="flex items-center gap-3">
+        <div>
+          <img src="/img/Logo_horizontal_color_Mesa de trabajo 1.svg" alt="logo_indep" width="50%">
+        </div>
+      </div>
+      
+      <!-- Contenedor relativo que alberga el botón + menú flotante (no afecta el exterior) -->
+      <div class="menu-dropdown-container">
+        <!-- Botón principal que abre/cierra -->
+        <button id="menuToggleBtn" class="group relative flex items-center gap-2 bg-amarillo-claro   border border-amarillo-claro rounded-full px-4 py-2 transition-all duration-200 shadow-sm active:scale-95">
+          <i class="bi bi-list text-rojo-oscuro"></i>
+          <span class="font-semibold text-rojo-oscuro text-sm hidden sm:inline">Menú</span>
+          <span class="font-semibold text-rojo-oscuro text-sm sm:hidden">Menú</span>
+          <i id="toggleIcon" class="fas fa-chevron-down text-indigo-600 text-xs transition-transform duration-200"></i>
+        </button>
+
+        <!-- PANEL FLOTANTE ABSOLUTO: NO AFECTA A LOS ELEMENTOS EXTERNOS, aparece/desaparece con clic -->
+        <div id="menuPanel" class="menu-absolute-panel">
+          <div class="p-4 divide-y divide-gray-100">
+            <!-- contenido interno idéntico al diseño pero optimizado, inspirado en la imagen: estadísticas, NFL, NBA, otros mundos -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pb-3">
+              
+              <!-- Bloque 1: Liga MX / Norte / Expansión -->
+              <div>
+                <div class="flex items-center gap-2 border-b border-indigo-200 pb-1.5 mb-2">
+                  <i class="fas fa-trophy text-indigo-600 text-sm"></i>
+                  <h3 class="font-black text-gray-800 text-xs uppercase tracking-wide">NORTE · LIGA MX</h3>
+                </div>
+                <ul class="space-y-1.5 text-sm">
+                  <li class="nav-item-hover flex items-center gap-2 text-gray-700 px-1 py-0.5 rounded"><i class="fas fa-calendar-alt w-4 text-indigo-400 text-xs"></i> <a href="#" class="hover:text-indigo-700">Calendario Clausura 2025</a></li>
+                  <li class="nav-item-hover flex items-center gap-2 text-gray-700 px-1 py-0.5 rounded"><i class="fas fa-table w-4 text-indigo-400 text-xs"></i> <a href="#">Tabla General</a></li>
+                  <li class="nav-item-hover flex items-center gap-2 text-gray-700 px-1 py-0.5 rounded"><i class="fas fa-users w-4 text-indigo-400 text-xs"></i> <a href="#">Grupos & Playoffs</a></li>
+                  <li class="nav-item-hover flex items-center gap-2 text-gray-700 px-1 py-0.5 rounded"><i class="fas fa-chart-line w-4 text-indigo-400 text-xs"></i> <a href="#">Líderes de goleo</a></li>
+                  <li class="mt-1 pt-1 border-t border-gray-100">
+                    <span class="text-[11px] font-bold text-gray-500 uppercase">LIGA DE EXPANSIÓN MX</span>
+                    <ul class="ml-4 mt-1 space-y-1">
+                      <li class="nav-item-hover text-gray-600 text-[13px]"><i class="fas fa-futbol w-3"></i> <a href="#">Calendario Expansión</a></li>
+                      <li class="nav-item-hover text-gray-600 text-[13px]"><i class="fas fa-chart-simple w-3"></i> <a href="#">Tabla de Cocientes</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Bloque 2: Estadísticas Liga MX + Femenil + Champions/ Serie A -->
+              <div>
+                <div class="flex items-center gap-2 border-b border-indigo-200 pb-1.5 mb-2">
+                  <i class="fas fa-chart-pie text-indigo-600 text-sm"></i>
+                  <h3 class="font-black text-gray-800 text-xs uppercase tracking-wide">ESTADÍSTICAS</h3>
+                </div>
+                <ul class="space-y-1.5 text-sm">
+                  <li class="nav-item-hover flex justify-between items-center px-1"><span><i class="fas fa-chart-simple w-4 text-indigo-400 text-xs"></i> Liga MX</span> <span class="text-[10px] bg-gray-100 px-1.5 rounded-full">+34%</span></li>
+                  <li class="nav-item-hover px-1"><i class="fas fa-chart-line w-4 text-indigo-400 text-xs"></i> <a href="#">Liga de Expansión MX</a></li>
+                  <li class="nav-item-hover px-1"><i class="fas fa-futbol w-4 text-pink-500 text-xs"></i> <a href="#">Liga MX Femenil</a> <span class="text-[10px] text-pink-500">Récord</span></li>
+                  <li class="nav-item-hover px-1"><i class="fas fa-table w-4 text-indigo-400 text-xs"></i> <a href="#">Tabla General Femenil</a></li>
+                </ul>
+                <div class="mt-2 pt-1 border-t border-gray-100">
+                  <p class="text-[11px] font-semibold text-gray-500 mb-1"><i class="fas fa-globe-americas"></i> FUTBOL INTERNACIONAL</p>
+                  <ul class="space-y-1 text-[13px]">
+                    <li class="nav-item-hover"><i class="fas fa-star text-yellow-600 w-4"></i> <a href="#">Champions League</a></li>
+                    <li class="nav-item-hover"><i class="fas fa-futbol w-4 text-green-600"></i> <a href="#">Liga 1 · Premier League</a></li>
+                    <li class="nav-item-hover"><i class="fas fa-medal w-4 text-amber-600"></i> <a href="#">Serie A · Bundesliga</a></li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Bloque 3: NFL, NBA, MLB + Tecnología / Streaming (2 columnas se unen en responsive) -->
+              <div>
+                <div class="flex flex-wrap gap-2 mb-2 border-b border-indigo-200 pb-1.5">
+                  <span class="font-black text-gray-800 text-xs uppercase flex items-center gap-1"><i class="fas fa-football"></i> NFL</span>
+                  <span class="font-black text-gray-800 text-xs uppercase flex items-center gap-1"><i class="fas fa-basketball"></i> NBA</span>
+                  <span class="font-black text-gray-800 text-xs uppercase flex items-center gap-1"><i class="fas fa-baseball"></i> MLB</span>
+                </div>
+                <ul class="space-y-1.5 text-sm">
+                  <li class="nav-item-hover flex items-center gap-2"><i class="fas fa-tv w-4 text-indigo-400"></i> <a href="#">Streaming · TV en vivo</a></li>
+                  <li class="nav-item-hover flex items-center gap-2"><i class="fas fa-wifi w-4 text-indigo-400"></i> <a href="#">NFL Game Pass / RedZone</a></li>
+                  <li class="nav-item-hover flex items-center gap-2"><i class="fas fa-basketball w-4 text-orange-500"></i> <a href="#">NBA League Pass</a></li>
+                  <li class="nav-item-hover flex items-center gap-2"><i class="fas fa-baseball w-4 text-blue-500"></i> <a href="#">MLB 2025</a></li>
+                  <li class="nav-item-hover flex items-center gap-2"><i class="fas fa-microchip w-4 text-indigo-400"></i> <a href="#">Tecnología deportiva</a></li>
+                </ul>
+                <div class="mt-2 flex flex-wrap gap-1 pt-1">
+                  <span class="text-[11px] bg-gray-100 rounded-full px-2 py-0.5">MT Mujeres</span>
+                  <span class="text-[11px] bg-gray-100 rounded-full px-2 py-0.5">Actualidad</span>
+                  <span class="text-[11px] bg-gray-100 rounded-full px-2 py-0.5">Consejos</span>
+                  <span class="text-[11px] bg-gray-100 rounded-full px-2 py-0.5">Trámites</span>
+                </div>
+              </div>
+
+              <!-- Bloque 4: Otros Mundos (esports, anime, cine, comunidad) -->
+              <div>
+                <div class="flex items-center gap-2 border-b border-indigo-200 pb-1.5 mb-2">
+                  <i class="fas fa-globe text-indigo-600 text-sm"></i>
+                  <h3 class="font-black text-gray-800 text-xs uppercase tracking-wide">OTROS MUNDOS</h3>
+                </div>
+                <ul class="space-y-1.5 text-sm">
+                  <li class="nav-item-hover flex items-center gap-2"><i class="fas fa-gamepad w-4 text-purple-500"></i> <a href="#">esports · Torneos</a></li>
+                  <li class="nav-item-hover flex items-center gap-2"><i class="fas fa-envelope w-4 text-indigo-400"></i> <a href="#">Bandeja · Noticias</a></li>
+                  <li class="nav-item-hover flex items-center gap-2"><i class="fas fa-film w-4 text-indigo-400"></i> <a href="#">Cine & Series</a></li>
+                  <li class="nav-item-hover flex items-center gap-2"><i class="fas fa-mask w-4 text-indigo-400"></i> <a href="#">Anime · Comics</a></li>
+                  <li class="nav-item-hover flex items-center gap-2"><i class="fas fa-headset w-4 text-indigo-400"></i> <a href="#">Videojuegos · FIFA</a></li>
+                  <li class="nav-item-hover flex items-center gap-2"><i class="fas fa-comment w-4 text-indigo-400"></i> <a href="#">Opinión · Columnas</a></li>
+                </ul>
+                <div class="mt-3 bg-indigo-50/70 rounded-xl p-2 flex items-center gap-2">
+                  <i class="fas fa-users text-indigo-700 text-lg"></i>
+                  <div>
+                    <p class="font-bold text-gray-800 text-xs">Comunidad unida</p>
+                    <p class="text-[11px] text-gray-600">+15% crecimiento · Debate activo</p>
+                    <div class="flex gap-1 mt-0.5">
+                      <span class="text-[9px] bg-indigo-200 rounded-full px-1.5 py-0.5">#LigaMX</span>
+                      <span class="text-[9px] bg-indigo-200 rounded-full px-1.5 py-0.5">#FutbolTotal</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-2 text-right text-[10px] text-gray-400 flex justify-end items-center gap-1"><i class="fas fa-search"></i> ¿Quién busca? <span class="text-indigo-500 font-medium">Liguilla 🔥</span></div>
+              </div>
+            </div>
+
+            <!-- Footer dentro del panel: aviso importante + badges -->
+            <div class="pt-3 mt-1 flex flex-wrap justify-between items-center text-[11px] text-gray-500 border-t border-gray-100">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-chart-line text-emerald-500"></i>
+                <span><span class="font-bold text-emerald-700">+15%</span> Comunidad en aumento</span>
+              </div>
+              <div class="flex gap-2">
+                <a href="#" class="hover:text-indigo-600 transition"><i class="fab fa-whatsapp"></i> Canal</a>
+                <a href="#" class="hover:text-indigo-600 transition"><i class="fas fa-bell"></i> Notif.</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</header>
+
+     <script>
+    (function() {
+      const toggleBtn = document.getElementById('menuToggleBtn');
+      const menuPanel = document.getElementById('menuPanel');
+      const icon = document.getElementById('toggleIcon');
+      let isOpen = false;
+
+      // Función para abrir el menú (sin afectar elementos externos)
+      function openMenu() {
+        if (!menuPanel) return;
+        menuPanel.classList.add('open');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+        isOpen = true;
+      }
+
+      function closeMenu() {
+        if (!menuPanel) return;
+        menuPanel.classList.remove('open');
+        if (icon) icon.style.transform = 'rotate(0deg)';
+        isOpen = false;
+      }
+
+      function toggleMenu() {
+        if (isOpen) {
+          closeMenu();
+        } else {
+          openMenu();
+        }
+      }
+
+      // Evento click en el botón principal
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', (e) => {
+          e.stopPropagation();  // Evita propagación indeseada
+          toggleMenu();
+        });
+      }
+
+      // Opcional: Cerrar menú al hacer clic fuera del panel, pero que NO afecte al resto de clicks normales.
+      // Esto mejora la experiencia sin molestar los elementos externos (solo cuando está abierto)
+      document.addEventListener('click', function(event) {
+        if (!isOpen) return;
+        // Si el clic no ocurre dentro del botón ni dentro del panel, se cierra.
+        const isClickInsideBtn = toggleBtn && toggleBtn.contains(event.target);
+        const isClickInsidePanel = menuPanel && menuPanel.contains(event.target);
+        
+        if (!isClickInsideBtn && !isClickInsidePanel) {
+          closeMenu();
+        }
+      });
+
+      // Cerrar con tecla ESC (tampoco afecta elementos externos)
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isOpen) {
+          closeMenu();
+        }
+      });
+
+      // Evitar que el scroll del body se active por el panel? No es necesario ya que el panel tiene max-height y overflow
+      // También al hacer clic en enlaces internos del menú, se cierra automáticamente (para buena usabilidad)
+      if (menuPanel) {
+        const linksInside = menuPanel.querySelectorAll('a');
+        linksInside.forEach(link => {
+          link.addEventListener('click', () => {
+            // Pequeño delay para que la navegación se sienta natural, pero cierra el menú
+            setTimeout(() => {
+              if (isOpen) closeMenu();
+            }, 80);
+          });
+        });
+      }
+      
+      // Prevenir cualquier posible evento que mueva el layout, confirmación de que el menú es posicionado de forma absoluta.
+      // Ajuste responsivo: si redimensionas la ventana cuando el menú está abierto, sigue sin empujar.
+      window.addEventListener('resize', () => {
+        // Solo mantenemos la misma posición, no hay cambios de layout.
+      });
+    })();
+  </script>

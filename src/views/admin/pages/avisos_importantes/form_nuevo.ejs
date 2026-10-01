@@ -1,0 +1,113 @@
+<div class="shadow-lg p-4 bg-white p-4 rounded-xl bg-white h-[700px] overflow-hidden">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nuevo Aviso Importante</p>
+    <div class="h-[600px] overflow-x-scroll">
+        <form id="formAviso">
+
+
+            <%- include('../../components/input',{
+                titulo:'Título:', 
+                type:'text', 
+                id:'titulo', 
+                name:'titulo', 
+                placeholder:'Agregue un título'}) 
+            %>
+
+           <%- include('../../components/textarea',{
+                titulo:'Descripción del aviso :', 
+                id:'descripcion', 
+                name:'descripcion', 
+                placeholder:'Descripción del aviso'}) 
+            %>
+
+            <%- include('../../components/select',{
+                titulo:'Asociar una página aa Aviso (opcional):',
+                texto:'Seleccione una página:', 
+                id:'pagina',
+                name:'pagina',
+                opciones:paginas, 
+                opcionId:'id_pagina',
+                opcionNombre:'nombre_pag'}) 
+            %>
+            <%- include('../../components/input',{
+                titulo:'URL externa (opcional):', 
+                type:'text', 
+                id:'url_pagina', 
+                name:'url_pagina', 
+                placeholder:'URL Externa'}) 
+            %>
+
+            <%- include('../../components/input',{
+                titulo:'Fecha de Inicio:', 
+                type:'date', 
+                id:'f_inicio', 
+                name:'f_inicio', 
+                placeholder:'Fecha de Inicio'}) 
+            %>
+
+            <%- include('../../components/input',{
+                titulo:'Fecha de Termino:', 
+                type:'date', 
+                id:'f_termino', 
+                name:'f_termino', 
+                placeholder:'Fecha de Termino'}) 
+            %>
+
+            <%- include('../../components/btnGuardar',{
+                texto:'Guardar Aviso Importante', 
+                type:'submit', 
+                id:'btnGuardarAviso'}) 
+            %>
+        </form>
+    </div>
+</div>
+<%- include('../../components/scriptValidator.ejs',{}) %>
+<script >
+
+    const validarAvisos=[
+        {name:'titulo', validate:'required'},
+        {name:'descripcion', validate:'required'},
+        {name:'f_inicio', validate:'required'},
+        {name:'f_termino', validate:'required'},
+    ];
+
+    const formAviso = document.getElementById('formAviso');
+
+    formAviso.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarAvisos);
+
+        if(valid){
+            const formData = new FormData(formAviso);
+
+            const response =await fetch('/avisos_importantes',{
+                method: 'POST',
+                body: formData
+            }); 
+
+            const data = await response.json();
+
+            if(response.ok){
+                refrescarTabla('#tablaAvisos')
+                    formAviso.reset();
+                    document.querySelectorAll('.msg').forEach(el => {
+                        el.className = 'msg';
+                        el.innerHTML = '';
+                    });
+
+                    // Remover clases de error/éxito de todos los campos
+                    document.querySelectorAll('.field').forEach(el => {
+                        el.classList.remove('border-red-500', 'border-green-500', 'is-invalid', 'is-valid');
+                    });
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registro agregado con éxito",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+            }
+        }
+
+    })
+
+</script>

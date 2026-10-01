@@ -1,0 +1,39 @@
+
+<%if(noticias.length == 0){%>
+    <%- include('../components_flowbite/aviso_sin_registros.ejs',{titulo:'No existen noticias publicados.'}) %>
+<%}else{%>
+<% for(noticia of noticias){%> 
+<article class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex flex-col">
+    <div class="relative">
+        <img src="/imagenes/home/noticias/<%=noticia.archivo.nombre_archivo%>" alt="Noticia 1" class="w-full h-56 object-cover" />
+        <span class="absolute top-4 left-4 bg-[#a57f2c] text-white text-xs font-bold uppercase px-3 py-1 rounded-full"><%=noticia.etiqueta.etiqueta%></span>
+    </div>
+    <%
+        const fecha = new Date(noticia.f_modificacion);
+        const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+        let fechaFormateada = fecha.toLocaleDateString('es-ES', opciones);
+        fechaFormateada = fechaFormateada.replace(' del ', ' de ');
+    %>
+    <div class="p-6 flex flex-col flex-1">
+        <div class="flex items-center text-sm text-gray-400 mb-3">
+            <i class="far fa-calendar-alt mr-2"></i>
+            <time datetime="<%= noticia.f_modificacion %>">
+                <%= fechaFormateada %>
+            </time>
+            <span class="mx-2">·</span>
+        </div> 
+        <h3 class="text-xl font-bold text-gray-800 mb-2 line-clamp-2">
+            <%=noticia.titulo%>
+        </h3>
+        <p class="text-gray-500 text-base leading-relaxed flex-1 line-clamp-3">
+            <%=noticia.descripcion%>
+        </p>
+        <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-end">
+            <a href="<%= noticia.url_pagina !== null ? noticia.url_pagina :  noticia.pagina !== null ?'/'+ noticia.pagina.ruta_pag + '/' + noticia.pagina.nombre_pag : '#' %>"" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                Leer más <i class="fas fa-chevron-right ml-1 text-xs"></i>
+            </a>
+        </div>
+    </div>
+</article>
+<%}%>
+<%}%>

@@ -1,0 +1,141 @@
+<style>
+  .m-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #9b2247;
+    margin: 0 0 2px 0;
+  }
+  .m-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 12px 0;
+  }
+  .m-title em {
+    font-style: italic;
+    color: #a57f2c;
+  }
+  .layout-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .layout-opt {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    background: #f9fafb;
+  }
+  .layout-opt:hover {
+    border-color: #a57f2c;
+    background: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  .layout-opt.sel {
+    border-color: #9b2247;
+    background: #fdf2f4;
+    box-shadow: 0 0 0 2px rgba(155, 34, 71, 0.2);
+  }
+  .lo-preview {
+    display: flex;
+    gap: 4px;
+    height: 36px;
+    background: #e5e7eb;
+    padding: 4px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .lo-preview span {
+    flex: 1;
+    background: #98989a;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+  .layout-opt:hover .lo-preview span {
+    background: #a57f2c;
+  }
+  .layout-opt.sel .lo-preview span {
+    background: #9b2247;
+  }
+  .lo-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+  }
+  .layout-opt.sel .lo-label {
+    color: #9b2247;
+  }
+  .btn-sec-amber {
+    background-color: #9b2247;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .btn-sec-amber:hover {
+    background-color: #7d1b39;
+  }
+  .btn-sec-ghost {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .btn-sec-ghost:hover {
+    background-color: #e5e7eb;
+  }
+</style>
+
+<div>
+    <p class="m-kicker">Estructura</p>
+    <h3 class="m-title">Nueva <em>sección</em></h3>
+
+    <p style="font-size:12px;color:#6b7280;margin-bottom:12px">Elige el número de columnas:</p>
+    <div class="layout-grid" id="layout-grid">
+      <div class="layout-opt sel" data-cols="1" onclick="selectLayout(this)">
+        <div class="lo-preview"><span></span></div>
+        <div class="lo-label">1 columna</div>
+      </div>
+      <div class="layout-opt" data-cols="2" onclick="selectLayout(this)">
+        <div class="lo-preview"><span></span><span></span></div>
+        <div class="lo-label">2 columnas</div>
+      </div>
+      <div class="layout-opt" data-cols="3" onclick="selectLayout(this)">
+        <div class="lo-preview"><span></span><span></span><span></span></div>
+        <div class="lo-label">3 columnas</div>
+      </div>
+      <div class="layout-opt" data-cols="2" data-flex="2,1" onclick="selectLayout(this)">
+        <div class="lo-preview"><span style="flex:2"></span><span style="flex:1"></span></div>
+        <div class="lo-label">2/3 + 1/3</div>
+      </div>
+      <div class="layout-opt" data-cols="2" data-flex="1,2" onclick="selectLayout(this)">
+        <div class="lo-preview"><span style="flex:1"></span><span style="flex:2"></span></div>
+        <div class="lo-label">1/3 + 2/3</div>
+      </div>
+      <div class="layout-opt" data-cols="4" onclick="selectLayout(this)">
+        <div class="lo-preview"><span></span><span></span><span></span><span></span></div>
+        <div class="lo-label">4 columnas</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button type="button" class="btn-sec-ghost" onclick="closeSectionModal()">Cancelar</button>
+      <button type="button" class="btn-sec-amber" onclick="addSection()">Agregar sección</button>
+    </div>
+</div>

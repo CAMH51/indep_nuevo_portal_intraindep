@@ -1,0 +1,83 @@
+<form id="formEditarEvento">
+<%- include('../../components/inputId',{
+    titulo:'Id Evento o Aviso:', 
+    type:'text', 
+    id:'id_evento_aviso', 
+    name:'id_evento_aviso', 
+    placeholder:''}) 
+%>
+<%- include('../../components/badge',{ 
+    titulo:'Archivo Actual',
+    bg:'bg-cyan-600',
+    mensaje:'',
+    id:'badgeEvento'}) 
+%>
+<%- include('../../components/inputFileEdit',{
+    formato:'.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt', 
+    id:'imgEditEvento', 
+    name:'imgEditEvento', 
+    titulo:'Cambiar Archivo Evento o Aviso',
+}) 
+%>
+
+<%- include('../../components/input',{
+    titulo:'Nombre del Evento o Aviso:', 
+    type:'text', 
+    id:'editNombreEventoAviso', 
+    name:'editNombreEventoAviso', 
+    placeholder:'Título del evento o aviso'}) 
+%>
+
+<%- include('../../components/textarea',{
+    titulo:'Descripción del evento o aviso:', 
+    id:'editDescripcion', 
+    name:'editDescripcion', 
+    placeholder:'Descripción del evento o aviso'}) 
+%>
+
+<%- include('../../components/btnGuardar',{
+    texto:'Guardar Evento o Aviso', 
+    type:'submit', 
+    id:'btnEditarEvento'}) 
+%>
+</form>
+
+<script >
+
+        const validarEditCampania=[
+            {name:'imgEditEvento', validate:'file_max:5|file_type:application/pdf,application/msword,application/vnd.ms-excel,application/vnd.ms-powerpoint, text/plain'},
+            {name:'editNombreEventoAviso', validate:'required'},
+        ];
+
+        const formEditarEvento = document.getElementById('formEditarEvento');
+
+        formEditarEvento.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditCampania);
+            
+        if(valid){  
+            const id = document.getElementById('id_evento_aviso').value;
+            const formData = new FormData(formEditarEvento);
+            const response = await fetch('/eventos_avisos/'+id + '?uploadPath=/home/eventos_avisos&fieldName=imgEditEvento',{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaEvento');
+                formEditarEvento.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

@@ -1,0 +1,346 @@
+<script >
+    function validarInput(idInput,configuracion){
+        const input = document.getElementById(idInput);
+
+        console.log(input);
+        console.log(configuracion);
+
+
+        if(!input){
+            return {
+                valido:false,
+                msg:"No se encontro el elemento",
+                campo:input
+            }
+        }
+
+        let valor = input.value;
+
+        const parametros = configuracion.parametros.split('|');
+        const tipo = parametros[0];
+        const opciones={};
+
+        for(let i=1; i< parametros.length; i++){
+            const param = parametros[i];
+
+            switch(param){
+                case 'requerido':
+                    opciones.requerido = true;
+                    break;  
+                case 'opcional':
+                    opciones.requerido = false;
+                    break;
+                case 'espacios':
+                    opciones.espacios = true;
+                    break;
+                case 'numeros':
+                    opciones.numeros = true;
+                    break;
+                default:
+                    if (param.startsWith('min:')) {
+                        opciones.min = parseFloat(param.split(':')[1]);
+                    } else if (param.startsWith('max:')) {
+                        opciones.max = parseFloat(param.split(':')[1]);
+                    } else if (param.startsWith('minlength:')) {
+                        opciones.minLength = parseInt(param.split(':')[1]);
+                    } else if (param.startsWith('maxlength:')) {
+                        opciones.maxLength = parseInt(param.split(':')[1]);
+                    }
+                    break;
+            }
+        }
+
+        switch(tipo){
+            case 'email':
+                opciones.requerido = opciones.requerido !== undefined? opciones.requerido : true;
+                break;
+            case 'texto':
+                opciones.permitirEspacios = opciones.permitirEspacios || false;
+                opciones.permitirNumeros = opciones.permitirNumeros || false;
+                opciones.minLength = opciones.minLength || 1;
+                opciones.maxLength = opciones.maxLength || 255;
+                opciones.requerido = opciones.requerido !== undefined ? opciones.requerido : true;
+                break;
+            case 'numero':
+                opciones.permitirDecimales = opciones.permitirDecimales || false;
+                opciones.permitirNegativos = opciones.permitirNegativos || false;
+                opciones.requerido = opciones.requerido !== undefined ? opciones.requerido : true;
+                break;
+        }
+
+        if(opciones.requerido && (!valor || valor.trim() === "")){
+            return {
+                valido:false,
+                msg:`El campo ${configuracion.name} es requerido`,
+                campo:idInput,
+                tipo:tipo
+            }
+        }
+        
+        if(!opciones.requerido && (!valor || valor.trim() === "")){
+            return {
+                valido:true,
+                msg:"",
+                campo:idInput,
+                tipo:tipo
+            }
+        }
+
+        valor = valor.trim();
+
+        switch(tipo){
+            case 'email':
+                return validarEmail(valor,idInput,configuracion.name);
+                break;
+            case 'texto':
+                return validarTexto(valor,opciones,idInput,configuracion.name);
+                break
+            case 'numero':
+                return validarNumero(valor,opciones,idInput,configuracion.name);
+                break;
+        }
+    }
+
+
+     // ========== FUNCIONES INTERNAS DE VALIDACIÓN ==========
+    
+    function validarEmail(email, idInput, nombreCampo) {
+        const nombre = nombreCampo || idInput;
+        
+        // Validar formato de email
+        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (!regexEmail.test(email)) {
+            return {
+                valido: false,
+                mensaje: `El ${nombre} no tiene un formato válido (ejemplo: usuario@dominio.com)`,
+                campo: idInput,
+                tipo: 'email'
+            };
+        }
+        
+        // Validar espacios
+        if (email.includes(" ")) {
+            return {
+                valido: false,
+                mensaje: `El ${nombre} no debe contener espacios`,
+                campo: idInput,
+                tipo: 'email'
+            };
+        }
+        
+        // Validar longitud
+        if (email.length > 254) {
+            return {
+                valido: false,
+                mensaje: `El ${nombre} es demasiado largo`,
+                campo: idInput,
+                tipo: 'email'
+            };
+        }
+        
+        // Validar estructura
+        const [usuario, dominio] = email.split('@');
+        if (!usuario || !dominio || !dominio.includes('.')) {
+            return {
+                valido: false,
+                mensaje: `El ${nombre} debe tener un usuario y un dominio válido`,
+                campo: idInput,
+                tipo: 'email'
+            };
+        }
+        
+        return {
+            valido: true,
+            mensaje: `${nombre} válido`,
+            campo: idInput,
+            tipo: 'email',
+            valor: email
+        };
+    }
+    
+    function validarTexto(texto, opciones, idInput, nombreCampo) {
+        const nombre = nombreCampo || idInput;
+        
+        // Validar longitud mínima
+        if (texto.length < opciones.minLength) {
+            return {
+                valido: false,
+                mensaje: `El ${nombre} debe tener al menos ${opciones.minLength} caracteres`,
+                campo: idInput,
+                tipo: 'texto'
+            };
+        }
+        
+        // Validar longitud máxima
+        if (texto.length > opciones.maxLength) {
+            return {
+                valido: false,
+                mensaje: `El ${nombre} no puede tener más de ${opciones.maxLength} caracteres`,
+                campo: idInput,
+                tipo: 'texto'
+            };
+        }
+        
+        // Construir expresión regular según opciones
+        let patron = '';
+        if (opciones.permitirEspacios && opciones.permitirNumeros) {
+            patron = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]+$/;
+        } else if (opciones.permitirEspacios && !opciones.permitirNumeros) {
+            patron = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+        } else if (!opciones.permitirEspacios && opciones.permitirNumeros) {
+            patron = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9]+$/;
+        } else {
+            patron = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]+$/;
+        }
+        
+        // Validar caracteres especiales
+        if (!patron.test(texto)) {
+            let mensajeError = `El ${nombre} contiene caracteres no permitidos`;
+            if (!opciones.permitirEspacios) mensajeError += " (no se permiten espacios)";
+            if (!opciones.permitirNumeros) mensajeError += " (no se permiten números)";
+            
+            return {
+                valido: false,
+                mensaje: mensajeError,
+                campo: idInput,
+                tipo: 'texto'
+            };
+        }
+        
+        return {
+            valido: true,
+            mensaje: `${nombre} válido`,
+            campo: idInput,
+            tipo: 'texto',
+            valor: texto
+        };
+    }
+    
+    function validarNumero(valor, opciones, idInput, nombreCampo) {
+        const nombre = nombreCampo || idInput;
+        
+        // Verificar que solo contenga números y caracteres válidos
+        let numero;
+        const valorLimpio = valor.trim();
+        
+        if (opciones.permitirDecimales) {
+            if (!/^-?\d*\.?\d+$/.test(valorLimpio)) {
+                return {
+                    valido: false,
+                    mensaje: `El ${nombre} debe contener solo números${opciones.permitirDecimales ? " y punto decimal" : ""}`,
+                    campo: idInput,
+                    tipo: 'numero'
+                };
+            }
+        } else {
+            if (!/^-?\d+$/.test(valorLimpio)) {
+                return {
+                    valido: false,
+                    mensaje: `El ${nombre} debe contener solo números enteros, sin letras ni caracteres especiales`,
+                    campo: idInput,
+                    tipo: 'numero'
+                };
+            }
+        }
+        
+        numero = parseFloat(valorLimpio);
+        
+        if (isNaN(numero)) {
+            return {
+                valido: false,
+                mensaje: `El ${nombre} no es un número válido`,
+                campo: idInput,
+                tipo: 'numero'
+            };
+        }
+        
+        // Validar números negativos
+        if (!opciones.permitirNegativos && numero < 0) {
+            return {
+                valido: false,
+                mensaje: `El ${nombre} no puede ser negativo`,
+                campo: idInput,
+                tipo: 'numero'
+            };
+        }
+        
+        // Validar mínimo
+        if (opciones.min !== undefined && numero < opciones.min) {
+            return {
+                valido: false,
+                mensaje: `El ${nombre} debe ser mayor o igual a ${opciones.min}`,
+                campo: idInput,
+                tipo: 'numero'
+            };
+        }
+        
+        // Validar máximo
+        if (opciones.max !== undefined && numero > opciones.max) {
+            return {
+                valido: false,
+                mensaje: `El ${nombre} debe ser menor o igual a ${opciones.max}`,
+                campo: idInput,
+                tipo: 'numero'
+            };
+        }
+        
+        // Validar decimales
+        if (!opciones.permitirDecimales && !Number.isInteger(numero)) {
+            return {
+                valido: false,
+                mensaje: `El ${nombre} no permite números decimales`,
+                campo: idInput,
+                tipo: 'numero'
+            };
+        }
+        
+        return {
+            valido: true,
+            mensaje: `${nombre} válido`,
+            campo: idInput,
+            tipo: 'numero',
+            valor: numero
+        };
+    }
+
+    // ==================== FUNCIÓN PARA VALIDAR MÚLTIPLES CAMPOS ====================
+function validarFormulario(campos) {
+    const resultados = {};
+    let formularioValido = true;
+    console.log('campos', campos);
+    
+    for (const campo of campos) {
+        const resultado = validarInput(campo.id, {
+            name: campo.name,
+            parametros: campo.parametros
+        });
+        console.log('resultado',resultado);
+        
+        resultados[campo.id] = resultado;
+        
+        if (!resultado.valido) {
+            formularioValido = false;
+            // Opcional: mostrar error en el input
+            /* const input = document.getElementById(campo.id);
+            if (input) {
+                input.classList.add('input-error');
+                mostrarError(input, resultado.mensaje);
+            } */
+        } else {
+            // Limpiar error si existe
+           /*  const input = document.getElementById(campo.id);
+            if (input) {
+                input.classList.remove('input-error');
+                limpiarError(input);
+            } */
+        }
+    }
+    
+    return {
+        valido: formularioValido,
+        resultados: resultados
+    };
+}
+
+</script>

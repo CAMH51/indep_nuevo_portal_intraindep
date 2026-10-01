@@ -1,0 +1,64 @@
+
+    <form id="formEditarEtiqueta">
+        <%- include('../../../components/inputId',{
+            titulo:'Id Etiqueta:', 
+            type:'text', 
+            id:'id_etiqueta', 
+            name:'id_etiqueta', 
+            placeholder:''}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Nombre de la etiqueta:', 
+            type:'text', id:'editEtiqueta', 
+            name:'editEtiqueta', 
+            placeholder:'Nombre de la etiqueta'}) 
+        %>
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Etiqueta', 
+            type:'submit', 
+            id:'btnEditarEtiqueta'}) 
+        %>
+    </form>
+
+    <script >
+
+         document.getElementById('id_etiqueta').readOnly = true;
+
+        const validarEditEtiqueta =[
+            {name:'editEtiqueta', validate:'required|min:5'}
+        ];
+
+        const formEditarEtiqueta = document.getElementById('formEditarEtiqueta');
+
+        formEditarEtiqueta.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditEtiqueta);
+            
+        if(valid){  
+            const id = document.getElementById('id_etiqueta').value;
+            const formData = new FormData(formEditarEtiqueta);
+            const response = await fetch('/etiquetas/'+id,{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaEtiquetas');
+                formEditarEtiqueta.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

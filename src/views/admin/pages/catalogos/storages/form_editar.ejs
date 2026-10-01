@@ -1,0 +1,83 @@
+
+    <form id="formEditarStorage">
+        <%- include('../../../components/inputId',{
+            titulo:'Id Storage:', 
+            type:'text', 
+            id:'id_storage', 
+            name:'id_storage', 
+            placeholder:''}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Nombre del storage:', 
+            type:'text', 
+            id:'editName', 
+            name:'editName', 
+            placeholder:'Nombre del storage'}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Ruta:', 
+            type:'text', 
+            id:'editBasePath', 
+            name:'editBasePath', 
+            placeholder:'Ruta'}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Directorio Principal:', 
+            type:'text', 
+            id:'editDirectorioPrincipal', 
+            name:'editDirectorioPrincipal', 
+            placeholder:'Directorio Principal'}) 
+        %>
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Storage', 
+            type:'submit', 
+            id:'btnEditarStorage'}) 
+        %>
+    </form>
+
+    <script >
+
+         document.getElementById('id_storage').readOnly = true;
+
+        const validarEditStorages =[
+            {name:'editName', validate:'required|min:5'},
+            {name:'editBasePath', validate:'required'},
+            {name:'editDirectorioPrincipal', validate:'required'}
+        ];
+
+        const formEditarStorage = document.getElementById('formEditarStorage');
+
+        formEditarStorage.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditStorages);
+            
+        if(valid){  
+            const id = document.getElementById('id_storage').value;
+            const formData = new FormData(formEditarStorage);
+            const response = await fetch('/storages/'+id,{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaStorages');
+                formEditarStorage.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

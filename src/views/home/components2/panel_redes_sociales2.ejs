@@ -1,0 +1,204 @@
+<style>
+
+    /* Demo content */
+    .demo-content {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    }
+    .demo-content h1 { font-size: 2rem; margin-bottom: 1rem; color: #111; }
+    .demo-content p  { color: #555; line-height: 1.7; margin-bottom: 1rem; }
+
+    /* ══════════════════════════════════════════
+       BOTONES FLOTANTES — lado izquierdo
+    ══════════════════════════════════════════ */
+    .social-float {
+      position: fixed;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 1000;
+    }
+
+    .sf-btn {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      height: 44px;
+      padding: 0;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      overflow: hidden;
+      border-radius: 0 8px 8px 0;
+      background: var(--brand);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      white-space: nowrap;
+
+      /* Sólo se ve el ícono; el label se expande en hover */
+      width: 44px;
+      transition: width .3s cubic-bezier(.4,0,.2,1),
+                  box-shadow .2s,
+                  transform .2s;
+    }
+
+    .sf-btn:hover {
+      width: 155px;
+      box-shadow: 4px 4px 16px -2px color-mix(in srgb, var(--brand) 55%, transparent);
+      transform: translateX(2px);
+    }
+
+    .sf-btn .sf-icon {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+    }
+    .sf-btn .sf-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: #fff;
+    }
+    .sf-btn .sf-label {
+      padding-right: 12px;
+      opacity: 0;
+      transition: opacity .2s .05s;
+      pointer-events: none;
+    }
+    .sf-btn:hover .sf-label { opacity: 1; }
+
+    /* Colores de marca */
+    .sf-fb  { --brand: #1877f2; }
+    .sf-ig  { --brand: #e1306c; background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); }
+    .sf-tw  { --brand: #1da1f2; }
+    .sf-wa  { --brand: #25d366; }
+    .sf-yt  { --brand: #ff0000; }
+    .sf-li  { --brand: #0a66c2; }
+    .sf-tt  { --brand: #010101; }
+    .sf-pi  { --brand: #e60023; }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVO
+       - < 768px : se ocultan los flotantes del lado
+         y aparece una barra inferior centrada
+    ══════════════════════════════════════════ */
+
+    /* Barra inferior (oculta en desktop) */
+    .social-bar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15,15,15,.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255,255,255,.08);
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      z-index: 1000;
+    }
+
+    .sb-btn {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: none;
+      background: var(--brand);
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform .15s, opacity .15s;
+      flex-shrink: 0;
+    }
+    .sb-btn svg { width: 20px; height: 20px; fill: #fff; }
+    .sb-btn:active { transform: scale(.9); opacity: .8; }
+
+    .sb-fb { --brand: #1877f2; }
+    .sb-ig { --brand: #e1306c; background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); }
+    .sb-tw { --brand: #1da1f2; }
+    .sb-wa { --brand: #25d366; }
+    .sb-yt { --brand: #ff0000; }
+    .sb-li { --brand: #0a66c2; }
+
+    /* ── breakpoint ── */
+    @media (max-width: 768px) {
+      .social-float { display: none; }   /* oculta lateral */
+      .social-bar   { display: flex; }   /* muestra barra  */
+      body { padding-bottom: 70px; }     /* espacio para barra */
+    }
+
+    /* Pantallas muy pequeñas: reduce tamaño íconos */
+    @media (max-width: 380px) {
+      .sb-btn { width: 36px; height: 36px; border-radius: 8px; }
+      .sb-btn svg { width: 17px; height: 17px; }
+      .social-bar { gap: 4px; padding: 8px 6px; }
+    }
+
+    /* Si la pantalla es muy angosta y no caben todos,
+       se hace scroll horizontal en la barra */
+    @media (max-width: 320px) {
+      .social-bar {
+        justify-content: flex-start;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .social-bar::-webkit-scrollbar { display: none; }
+    }
+  </style>
+
+  <!-- ══════════════════════════════════════════
+       BOTONES FLOTANTES LATERALES (desktop)
+  ══════════════════════════════════════════ -->
+
+
+    <nav class="social-float animate__animated animate__fadeIn" aria-label="Redes sociales">
+  
+      <a href="https://www.facebook.com/IndepOficialMex/" class="sf-btn sf-fb" aria-label="Facebook" target="_blank">
+        <span class="sf-icon"><svg viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3l-.5 3H13v6.8c4.56-.93 8-4.96 8-9.8z"/></svg></span>
+        <span class="sf-label">Facebook</span>
+      </a>
+  
+      <a href="https://www.instagram.com/reel/CgfmO9JlCZQ/" class="sf-btn sf-ig" aria-label="Instagram" target="_blank">
+        <span class="sf-icon"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.975.975 1.246 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.975.975-2.242 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.975-.975-1.246-2.242-1.308-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.516 2.497 5.783 2.226 7.149 2.163 8.415 2.105 8.796 2.163 12 2.163zM12 0C8.741 0 8.332.014 7.052.072 5.197.157 3.355.673 2.014 2.014.673 3.355.157 5.197.072 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.085 1.855.601 3.697 1.942 5.038 1.341 1.341 3.183 1.857 5.038 1.942C8.332 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 1.855-.085 3.697-.601 5.038-1.942 1.341-1.341 1.857-3.183 1.942-5.038.058-1.28.072-1.689.072-4.948 0-3.259-.014-3.668-.072-4.948-.085-1.855-.601-3.697-1.942-5.038C20.645.673 18.803.157 16.948.072 15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></span>
+        <span class="sf-label">Instagram</span>
+      </a>
+  
+       <a href="https://x.com/IndepOficialMex" class="sf-btn sf-tw" aria-label="X Twitter" target="_blank">
+        <span class="sf-icon"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span>
+        <span class="sf-label">X / Twitter</span>
+      </a> 
+  
+    </nav>
+
+
+  <!-- ══════════════════════════════════════════
+       BARRA INFERIOR (móvil ≤ 768px)
+  ══════════════════════════════════════════ -->
+    <nav class="social-bar animate__animated animate__fadeIn" aria-label="Redes sociales">
+  
+      <a href="https://www.facebook.com/IndepOficialMex/" class="sb-btn sb-fb" aria-label="Facebook" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3l-.5 3H13v6.8c4.56-.93 8-4.96 8-9.8z"/></svg>
+      </a>
+      <a href="https://www.instagram.com/reel/CgfmO9JlCZQ/" class="sb-btn sb-ig" aria-label="Instagram" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.975.975 1.246 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.975.975-2.242 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.975-.975-1.246-2.242-1.308-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.516 2.497 5.783 2.226 7.149 2.163 8.415 2.105 8.796 2.163 12 2.163zM12 0C8.741 0 8.332.014 7.052.072 5.197.157 3.355.673 2.014 2.014.673 3.355.157 5.197.072 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.085 1.855.601 3.697 1.942 5.038 1.341 1.341 3.183 1.857 5.038 1.942C8.332 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 1.855-.085 3.697-.601 5.038-1.942 1.341-1.341 1.857-3.183 1.942-5.038.058-1.28.072-1.689.072-4.948 0-3.259-.014-3.668-.072-4.948-.085-1.855-.601-3.697-1.942-5.038C20.645.673 18.803.157 16.948.072 15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </a>
+      <a href="https://x.com/IndepOficialMex" class="sb-btn sb-tw" aria-label="X Twitter" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a> 
+    </nav>
+
+

@@ -1,0 +1,72 @@
+
+    <form id="formEditarApartado">
+        <%- include('../../../components/inputId',{
+            titulo:'Id Apartado:', 
+            type:'text', 
+            id:'id_apartado', 
+            name:'id_apartado', 
+            placeholder:''}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Nombre del apartado:', 
+            type:'text', 
+            id:'editApartado', 
+            name:'editApartado', 
+            placeholder:'Nombre del apartado'}) 
+        %>
+
+        <%- include('../../../components/textarea',{
+            titulo:'Descripción:', 
+            id:'editDescripcion', 
+            name:'editDescripcion', 
+            placeholder:'Descripción'}) 
+        %>
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Apartado', 
+            type:'submit', 
+            id:'btnEditarApartado'}) 
+        %>
+    </form>
+
+    <script >
+
+         document.getElementById('id_apartado').readOnly = true;
+
+        const validarEditApartados =[
+            {name:'editApartado', validate:'required|min:5'}
+        ];
+
+        const formEditarApartado = document.getElementById('formEditarApartado');
+
+        formEditarApartado.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { valid } = validateAll(validarEditApartados);
+            
+        if(valid){  
+            const id = document.getElementById('id_apartado').value;
+            const formData = new FormData(formEditarApartado);
+            const response = await fetch('/apartados/'+id,{
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+
+            if(data.success){
+                refrescarTabla('#tablaApartados');
+                formEditarApartado.reset();
+                closeModal();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro actualizado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+            
+        });
+
+    </script>

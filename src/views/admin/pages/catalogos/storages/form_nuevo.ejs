@@ -1,0 +1,80 @@
+<div class="shadow-lg p-4 bg-white  p-4 rounded-xl bg-white">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nuevo Storage</p>
+    <form id="formStorage">
+
+         <%- include('../../../components/input',{
+            titulo:'Nombre del storage:', 
+            type:'text', 
+            id:'name', 
+            name:'name', 
+            placeholder:'Nombre del storage'}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Ruta:', 
+            type:'text', 
+            id:'base_path', 
+            name:'base_path', 
+            placeholder:'Ruta'}) 
+        %>
+
+        <%- include('../../../components/input',{
+            titulo:'Directorio Principal:', 
+            type:'text', 
+            id:'directorio_principal', 
+            name:'directorio_principal', 
+            placeholder:'Directorio Principal'}) 
+        %>
+
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Storage', 
+            type:'submit', 
+            id:'btnGuardarStorage'}) 
+        %>
+    </form>
+</div>
+
+<%- include('../../../components/scriptValidator.ejs',{}) %>
+
+<script >
+
+    const validarStorages =[
+        {name:'name', validate:'required|min:5'},
+        {name:'base_path', validate:'required|min:5'},
+        {name:'directorio_principal', validate:'required|min:4'}
+    ];
+
+    const formStorage = document.getElementById('formStorage');
+
+    formStorage.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarStorages);
+        
+        if(valid){
+            
+            const formData = new FormData(formStorage);
+    
+            const response =await fetch('/storages',{
+                method: 'POST',
+                body: formData
+            }); 
+    
+            const data = await response.json();
+    
+            if(data.success){
+                // Si solo quieres recargar los datos actuales
+                refrescarTabla('#tablaStorages')
+                formStorage.reset();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro agregado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+
+    });
+
+</script>

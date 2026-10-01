@@ -1,0 +1,43 @@
+<%if(serviciosPromociones && serviciosPromociones.length == 0){%>
+     <%- include('../components_flowbite/aviso_sin_registros.ejs',{titulo:'No existen servicios o promociones publicados.'}) %>
+  <%}else{%>
+
+<section class="w-full p-2" id="servicios">
+    <div class="flex gap-2">
+      <div class="swiper-servicios-button-prev cursor-pointer bg-gray-200 p-2 rounded-full">
+        <i class="bi bi-caret-left"></i>
+      </div>
+      <div class="swiper-servicios-button-next cursor-pointer bg-gray-200 p-2 rounded-full">
+        <i class="bi bi-caret-right"></i>
+      </div>
+    </div>
+    <div class="swiper serviciosSwiper ">
+        <div class="swiper-wrapper m-3">
+            <% serviciosPromociones.forEach((n, i) => { %>
+            <div class="swiper-slide">
+                <div class="w-full bg-white rounded-2xl p-4 shadow-lg card-hover border border-gray-100/80 flex flex-col items-center text-center">
+                    <div class="w-full h-[200px] rounded-2xl icon-gradient-3 flex items-center object-cover justify-center text-white text-3xl shadow-lg shadow-blue-200/50 mb-4">
+                        <img src="/imagenes/home/servicios_promociones/<%= n.archivo.nombre_archivo %> " 
+                    class="w-full h-[200px] object-cover rounded-xl" width="100%">
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2"><%= n.titulo %></h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-5">
+                        <%= n.descripcion %>
+                    </p>
+                    <a href="<%= n.url_pagina !== null ? n.url_pagina :  n.fk_id_pagina !== null ?'/'+ n.pagina.ruta_pag + '/' + n.pagina.nombre_pag : '#' %>"
+                      target="<% if(n.url_pagina !== null){ %> _blank <%}%>" class="mt-auto w-full bg-[#9b2247] hover:bg-[#9b2247] text-white font-medium py-2.5 px-4 rounded-xl transition duration-200 shadow-md hover:shadow-blue-200/50 flex items-center justify-center gap-2 group">
+                        <span>Conocer más</span>
+                        <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+             <% }) %>
+
+        </div>
+        <div class="swiper-pagination-servicios"></div>
+    </div>
+  </section>
+    <%}%>
+<script >
+    const serviciosSwiper = new Swiper('.serviciosSwiper', { slidesPerView: 1, spaceBetween: 20, loop: true, autoplay: { delay: 5000 }, pagination: { el: '.swiper-pagination-servicios', clickable: true }, navigation: { nextEl: '.swiper-servicios-button-next', prevEl: '.swiper-servicios-button-prev' }, breakpoints: { 640: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } } });
+</script>

@@ -1,0 +1,60 @@
+<div class="shadow-lg p-4 bg-white p-4 rounded-xl bg-white">
+    <p class="p-2 text-2xl font-bold"><i class="bi bi-plus-circle"></i> Nuevo Rol</p>
+    <form id="formRol">
+        <%- include('../../../components/input',{
+            titulo:'Nombre del Rol:', 
+            type:'text', id:'rol', 
+            name:'rol', 
+            placeholder:'Nombre del rol'}) 
+        %>
+        <%- include('../../../components/btnGuardar',{
+            texto:'Guardar Rol', 
+            type:'submit', 
+            id:'btnGuardarRol'}) 
+        %>
+    </form>
+</div>
+
+<%- include('../../../components/scriptValidator.ejs',{}) %>
+
+<script >
+
+    const validarRol =[
+        {name:'rol', validate:'required|min:5'}
+    ];
+
+    const formRol = document.getElementById('formRol');
+
+    formRol.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { valid } = validateAll(validarRol);
+        
+        if(valid){
+            
+            const formData = new FormData(formRol);
+            formData.append('fk_id_user',1);
+    
+            const response =await fetch('/roles',{
+                method: 'POST',
+                body: formData
+            }); 
+    
+            const data = await response.json();
+    
+            if(data.success){
+                // Si solo quieres recargar los datos actuales
+                refrescarTabla('#tablaRoles')
+                formRol.reset();
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Registro agregado con éxito",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+
+    });
+
+</script>
